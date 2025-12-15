@@ -18,13 +18,16 @@
         overflow: hidden;
         height: 100%;
         width: 100%;
+        touch-action: none; /* belangrijk voor mobiel */
       }
+
+      /* Zorg dat de scene fullscreen gaat */
       a-scene {
-        position: fixed;
+        position: absolute !important;
         top: 0;
         left: 0;
-        height: 100%;
-        width: 100%;
+        width: 100% !important;
+        height: 100% !important;
       }
     </style>
   </head>
