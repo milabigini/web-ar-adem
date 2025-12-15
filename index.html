@@ -37,21 +37,21 @@
       <a-entity mindar-image-target="targetIndex: 0">
         <!-- Ademhalingscirkel -->
         <a-circle
+          id="circle"
           breathing
           tilt-color
+          position="0 0.01 0"
           color="#66ccff"
           radius="0.15"
           rotation="-90 0 0"
           material="shader: flat; opacity: 0.8;"
-        >
-        </a-circle>
+        ></a-circle>
 
         <!-- Audio afspelen -->
         <a-entity sound="src: #breath; autoplay: true; loop: true"></a-entity>
       </a-entity>
     </a-scene>
 
-    <!-- Scripts voor animatie en tilt-kleur -->
     <script>
       // Ademhalingsanimatie
       AFRAME.registerComponent("breathing", {
@@ -63,12 +63,14 @@
 
       // Kleur verandert bij kantelen
       AFRAME.registerComponent("tilt-color", {
+        init: function () {
+          this.tilt = 0;
+          window.addEventListener("deviceorientation", (event) => {
+            this.tilt = event.beta || 0;
+          });
+        },
         tick: function () {
-          let tilt = 0;
-          if (window.DeviceOrientationEvent && event) {
-            tilt = event.beta || 0;
-          }
-          const green = Math.min(255, Math.max(0, 120 + tilt));
+          const green = Math.min(255, Math.max(0, 120 + this.tilt));
           this.el.setAttribute("color", `rgb(100, ${green}, 200)`);
         },
       });
