@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ademhalingscirkel AR</title>
+
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+    <!-- MindAR -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+
+  <body>
+    <a-scene
+      mindar-image="imageTargetSrc: targets.mind;"
+      embedded
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: true"
+    >
+      <!-- Camera -->
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- Assets (geluid) -->
+      <a-assets>
+        <audio id="breath" src="breathing.mp3"></audio>
+      </a-assets>
+
+      <!-- Marker -->
+      <a-entity mindar-image-target="targetIndex: 0">
+        <!-- Ademhalingscirkel -->
+        <a-circle
+          breathing
+          tilt-color
+          color="#66ccff"
+          radius="0.15"
+          rotation="-90 0 0"
+          material="shader: flat; opacity: 0.8;"
+        >
+        </a-circle>
+
+        <!-- Audio afspelen -->
+        <a-entity sound="src: #breath; autoplay: true; loop: true"></a-entity>
+      </a-entity>
+    </a-scene>
+
+    <!-- Scripts voor animatie en tilt-kleur -->
+    <script>
+      // Ademhalingsanimatie
+      AFRAME.registerComponent("breathing", {
+        tick: function (time) {
+          const scale = 0.12 + 0.03 * Math.sin(time / 800);
+          this.el.setAttribute("scale", `${scale} ${scale} ${scale}`);
+        },
+      });
+
+      // Kleur verandert bij kantelen
+      AFRAME.registerComponent("tilt-color", {
+        tick: function () {
+          let tilt = 0;
+          if (window.DeviceOrientationEvent && event) {
+            tilt = event.beta || 0;
+          }
+          const green = Math.min(255, Math.max(0, 120 + tilt));
+          this.el.setAttribute("color", `rgb(100, ${green}, 200)`);
+        },
+      });
+    </script>
+  </body>
+</html>
