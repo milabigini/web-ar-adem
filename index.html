@@ -2,7 +2,7 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>MindAR Test Vierkant</title>
+    <title>MindAR Fullscreen Test</title>
 
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -11,9 +11,20 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
+      html,
       body {
         margin: 0;
+        padding: 0;
         overflow: hidden;
+        height: 100%;
+        width: 100%;
+      }
+      a-scene {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
       }
     </style>
   </head>
@@ -25,12 +36,12 @@
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: true"
     >
-      <!-- Camera -->
+      <!-- Camera fullscreen -->
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <!-- Marker -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Zichtbare testbox -->
+        <!-- Test object: rode box -->
         <a-box
           color="red"
           height="0.3"
