@@ -2,40 +2,159 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>CAMERA TEST</title>
-  </head>
+    <title>Scan & Meditate</title>
 
-  <body style="margin: 0; background: red">
-    <button
-      style="
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 32px;
-        padding: 30px;
-        z-index: 9999;
-      "
-      onclick="startCamera()"
-    >
-      👉 START CAMERA 👈
-    </button>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: black;
+        font-family: system-ui, sans-serif;
+      }
 
-    <video
-      id="camera"
-      autoplay
-      playsinline
-      style="
+      /* CAMERA */
+      video {
         position: fixed;
         inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        z-index: 0;
         display: none;
-      "
-    ></video>
+      }
+
+      /* OVERLAY */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* HALO GROEP */
+      .halo {
+        position: absolute;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 220, 160, 0.5);
+        box-shadow: 0 0 30px rgba(255, 220, 160, 0.4),
+          0 0 120px rgba(255, 220, 160, 0.25);
+        animation: breathe 6s ease-in-out infinite;
+      }
+
+      .halo.h1 {
+        width: 60vmin;
+        height: 60vmin;
+      }
+      .halo.h2 {
+        width: 72vmin;
+        height: 72vmin;
+        opacity: 0.6;
+        animation-delay: -2s;
+      }
+      .halo.h3 {
+        width: 85vmin;
+        height: 85vmin;
+        opacity: 0.35;
+        animation-delay: -4s;
+      }
+
+      @keyframes breathe {
+        0% {
+          transform: scale(0.95);
+          opacity: 0.4;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0.95);
+          opacity: 0.4;
+        }
+      }
+
+      /* TEKST */
+      .breath-text {
+        position: fixed;
+        top: 50%;
+        transform: translateY(140%);
+        text-align: center;
+        color: white;
+        font-size: 20px;
+        letter-spacing: 1px;
+        opacity: 0.8;
+        z-index: 3;
+        animation: textBreath 6s ease-in-out infinite;
+      }
+
+      @keyframes textBreath {
+        0% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.4;
+        }
+      }
+
+      /* START */
+      .start {
+        position: fixed;
+        inset: 0;
+        background: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+      }
+
+      .start button {
+        padding: 18px 30px;
+        font-size: 16px;
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        background: transparent;
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- CAMERA -->
+    <video id="camera" autoplay playsinline></video>
+
+    <!-- HALO'S -->
+    <div class="overlay">
+      <div class="halo h3"></div>
+      <div class="halo h2"></div>
+      <div class="halo h1"></div>
+    </div>
+
+    <!-- TEKST -->
+    <div class="breath-text" id="breathText">Inademen</div>
+
+    <!-- START -->
+    <div class="start" id="start">
+      <button onclick="startCamera()">START</button>
+    </div>
 
     <script>
+      const text = document.getElementById("breathText");
+      let inhale = true;
+
+      setInterval(() => {
+        inhale = !inhale;
+        text.textContent = inhale ? "Inademen" : "Uitademen";
+      }, 3000);
+
       function startCamera() {
         navigator.mediaDevices
           .getUserMedia({
@@ -46,9 +165,10 @@
             const video = document.getElementById("camera");
             video.srcObject = stream;
             video.style.display = "block";
+            document.getElementById("start").style.display = "none";
           })
           .catch((err) => {
-            alert("Camera werkt niet");
+            alert("Camera toegang is nodig.");
             console.error(err);
           });
       }
