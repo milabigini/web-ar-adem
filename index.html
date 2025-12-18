@@ -12,7 +12,7 @@
         height: 100%;
         overflow: hidden;
         background: black;
-        font-family: system-ui, sans-serif;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
       /* CAMERA */
@@ -64,14 +64,15 @@
       /* TEKST */
       .breath-text {
         position: fixed;
-        top: 50%;
-        transform: translateY(140%);
+        bottom: 10%; /* onderin */
+        width: 100%;
         text-align: center;
-        color: white;
-        font-size: 24px;
+        color: #ffdca0; /* zelfde kleur als halos */
+        font-size: 32px; /* iets groter */
         letter-spacing: 1px;
-        opacity: 0.9;
+        opacity: 0.95;
         z-index: 3;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
       /* START */
@@ -139,8 +140,6 @@
         phase = (phase + 1) % 4;
       }
 
-      let interval;
-
       function startSession() {
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
@@ -151,7 +150,7 @@
             document.getElementById("start").style.display = "none";
 
             nextPhase(); // start meteen
-            interval = setInterval(nextPhase, cycleTime);
+            setInterval(nextPhase, cycleTime);
           })
           .catch((err) => {
             alert("Camera toegang is nodig.");
