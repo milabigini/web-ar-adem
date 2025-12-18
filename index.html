@@ -41,10 +41,10 @@
       .halo {
         position: absolute;
         border-radius: 50%;
-        border: 3px solid rgba(255, 220, 160, 0.9); /* feller */
+        border: 3px solid rgba(255, 220, 160, 0.9);
         box-shadow: 0 0 30px rgba(255, 220, 160, 0.8),
-          0 0 120px rgba(255, 220, 160, 0.7); /* feller */
-        animation: breathe 6s ease-in-out infinite;
+          0 0 120px rgba(255, 220, 160, 0.7);
+        animation: breathe 8s ease-in-out infinite; /* rustig tempo */
       }
 
       .halo.h1 {
@@ -85,22 +85,20 @@
         transform: translateY(140%);
         text-align: center;
         color: white;
-        font-size: 20px;
+        font-size: 24px;
         letter-spacing: 1px;
         opacity: 0.8;
         z-index: 3;
-        animation: textBreath 6s ease-in-out infinite;
+        animation: textBreath 8s ease-in-out infinite; /* synchroon met halos */
       }
 
       @keyframes textBreath {
-        0% {
+        0%,
+        100% {
           opacity: 0.4;
         }
         50% {
           opacity: 1;
-        }
-        100% {
-          opacity: 0.4;
         }
       }
 
@@ -159,7 +157,7 @@
       setInterval(() => {
         inhale = !inhale;
         text.textContent = inhale ? "Inademen" : "Uitademen";
-      }, 3000);
+      }, 4000); // 4 seconden per in- of uitademing
 
       function startCamera() {
         navigator.mediaDevices
