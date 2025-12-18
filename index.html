@@ -2,103 +2,38 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>Scan & Meditate</title>
+    <title>CAMERA TEST</title>
+  </head>
 
-    <style>
-      html,
-      body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: black;
-        font-family: system-ui, sans-serif;
-      }
+  <body style="margin: 0; background: red">
+    <button
+      style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 32px;
+        padding: 30px;
+        z-index: 9999;
+      "
+      onclick="startCamera()"
+    >
+      👉 START CAMERA 👈
+    </button>
 
-      /* Camera */
-      video {
+    <video
+      id="camera"
+      autoplay
+      playsinline
+      style="
         position: fixed;
         inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        z-index: 0;
         display: none;
-      }
-
-      /* Overlay */
-      .overlay {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-        z-index: 2;
-      }
-
-      /* Ademcirkel */
-      .circle {
-        width: 70vmin;
-        height: 70vmin;
-        border-radius: 50%;
-        border: 5px solid rgba(255, 220, 160, 0.85);
-        box-shadow: 0 0 30px rgba(255, 220, 160, 0.6),
-          0 0 100px rgba(255, 220, 160, 0.35),
-          inset 0 0 40px rgba(255, 220, 160, 0.25);
-        animation: breathe 6s ease-in-out infinite;
-      }
-
-      @keyframes breathe {
-        0% {
-          transform: scale(0.95);
-          opacity: 0.75;
-        }
-        50% {
-          transform: scale(1.05);
-          opacity: 1;
-        }
-        100% {
-          transform: scale(0.95);
-          opacity: 0.75;
-        }
-      }
-
-      /* Start scherm */
-      .start {
-        position: fixed;
-        inset: 0;
-        background: black;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 5;
-      }
-
-      .start button {
-        padding: 16px 26px;
-        font-size: 16px;
-        border-radius: 30px;
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        background: transparent;
-        color: white;
-      }
-    </style>
-  </head>
-
-  <body>
-    <!-- Camera -->
-    <video id="camera" autoplay playsinline></video>
-
-    <!-- Ademcirkel -->
-    <div class="overlay">
-      <div class="circle"></div>
-    </div>
-
-    <!-- Start -->
-    <div class="start" id="start">
-      <button onclick="startCamera()">START EXPERIENCE</button>
-    </div>
+      "
+    ></video>
 
     <script>
       function startCamera() {
@@ -111,10 +46,9 @@
             const video = document.getElementById("camera");
             video.srcObject = stream;
             video.style.display = "block";
-            document.getElementById("start").style.display = "none";
           })
           .catch((err) => {
-            alert("Camera toegang is nodig.");
+            alert("Camera werkt niet");
             console.error(err);
           });
       }
