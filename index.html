@@ -41,33 +41,32 @@
       .halo {
         position: absolute;
         border-radius: 50%;
-        border: 3px solid rgba(255, 220, 160, 0.5);
-        box-shadow: 0 0 30px rgba(255, 220, 160, 0.4),
-          0 0 120px rgba(255, 220, 160, 0.25);
+        border: 3px solid rgba(255, 220, 160, 0.9); /* feller */
+        box-shadow: 0 0 30px rgba(255, 220, 160, 0.8),
+          0 0 120px rgba(255, 220, 160, 0.7); /* feller */
         animation: breathe 6s ease-in-out infinite;
       }
 
       .halo.h1 {
         width: 60vmin;
         height: 60vmin;
+        opacity: 0.9;
       }
       .halo.h2 {
         width: 72vmin;
         height: 72vmin;
-        opacity: 0.6;
-        animation-delay: -2s;
+        opacity: 0.9;
       }
       .halo.h3 {
         width: 85vmin;
         height: 85vmin;
-        opacity: 0.35;
-        animation-delay: -4s;
+        opacity: 0.9;
       }
 
       @keyframes breathe {
         0% {
           transform: scale(0.95);
-          opacity: 0.4;
+          opacity: 0.6;
         }
         50% {
           transform: scale(1.05);
@@ -75,7 +74,7 @@
         }
         100% {
           transform: scale(0.95);
-          opacity: 0.4;
+          opacity: 0.6;
         }
       }
 
@@ -123,6 +122,13 @@
         border: 1px solid rgba(255, 255, 255, 0.6);
         background: transparent;
         color: white;
+        cursor: pointer;
+        transition: background 0.3s, color 0.3s;
+      }
+
+      .start button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffdca0;
       }
     </style>
   </head>
