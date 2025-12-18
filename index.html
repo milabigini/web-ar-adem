@@ -2,7 +2,7 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>Scan & Meditate</title>
+    <title>Scan & Meditate - Box Breathing</title>
 
     <style>
       html,
@@ -44,38 +44,21 @@
         border: 3px solid rgba(255, 220, 160, 0.9);
         box-shadow: 0 0 30px rgba(255, 220, 160, 0.8),
           0 0 120px rgba(255, 220, 160, 0.7);
-        animation: breathe 8s ease-in-out infinite; /* rustig tempo */
+        transform: scale(0.95);
+        transition: transform 4s ease-in-out; /* overgang voor in/uit */
       }
 
       .halo.h1 {
         width: 60vmin;
         height: 60vmin;
-        opacity: 0.9;
       }
       .halo.h2 {
         width: 72vmin;
         height: 72vmin;
-        opacity: 0.9;
       }
       .halo.h3 {
         width: 85vmin;
         height: 85vmin;
-        opacity: 0.9;
-      }
-
-      @keyframes breathe {
-        0% {
-          transform: scale(0.95);
-          opacity: 0.6;
-        }
-        50% {
-          transform: scale(1.05);
-          opacity: 1;
-        }
-        100% {
-          transform: scale(0.95);
-          opacity: 0.6;
-        }
       }
 
       /* TEKST */
@@ -87,19 +70,8 @@
         color: white;
         font-size: 24px;
         letter-spacing: 1px;
-        opacity: 0.8;
+        opacity: 0.9;
         z-index: 3;
-        animation: textBreath 8s ease-in-out infinite; /* synchroon met halos */
-      }
-
-      @keyframes textBreath {
-        0%,
-        100% {
-          opacity: 0.4;
-        }
-        50% {
-          opacity: 1;
-        }
       }
 
       /* START */
@@ -147,29 +119,39 @@
 
     <!-- START -->
     <div class="start" id="start">
-      <button onclick="startCamera()">START</button>
+      <button onclick="startSession()">START</button>
     </div>
 
     <script>
       const text = document.getElementById("breathText");
-      let inhale = true;
+      const halos = document.querySelectorAll(".halo");
+      const cycleTime = 4000; // tijd per fase in ms (4 seconden)
+      let phase = 0; // 0=in,1=hold,2=out,3=hold
 
-      setInterval(() => {
-        inhale = !inhale;
-        text.textContent = inhale ? "Inademen" : "Uitademen";
-      }, 4000); // 4 seconden per in- of uitademing
+      const phaseText = ["Inademen", "Vasthouden", "Uitademen", "Vasthouden"];
+      const phaseScale = [1.05, 1.05, 0.95, 0.95]; // in/hold/uit/hold
 
-      function startCamera() {
+      function nextPhase() {
+        text.textContent = phaseText[phase];
+        halos.forEach((halo) => {
+          halo.style.transform = `scale(${phaseScale[phase]})`;
+        });
+        phase = (phase + 1) % 4;
+      }
+
+      let interval;
+
+      function startSession() {
         navigator.mediaDevices
-          .getUserMedia({
-            video: { facingMode: "environment" },
-            audio: false,
-          })
+          .getUserMedia({ video: { facingMode: "environment" }, audio: false })
           .then((stream) => {
             const video = document.getElementById("camera");
             video.srcObject = stream;
             video.style.display = "block";
             document.getElementById("start").style.display = "none";
+
+            nextPhase(); // start meteen
+            interval = setInterval(nextPhase, cycleTime);
           })
           .catch((err) => {
             alert("Camera toegang is nodig.");
