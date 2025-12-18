@@ -2,59 +2,118 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>Ademhalingscirkel AR</title>
-
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <title>Scan & Meditate</title>
 
     <style>
       html,
       body {
         margin: 0;
+        padding: 0;
         width: 100%;
         height: 100%;
         overflow: hidden;
         background: black;
+        font-family: system-ui, sans-serif;
       }
 
-      a-scene {
-        position: fixed;
-        inset: 0;
-      }
-
+      /* Camera */
       video {
         position: fixed;
         inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        z-index: -1;
+        z-index: 0;
+      }
+
+      /* Overlay */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      /* Ademcirkel */
+      .circle {
+        width: 70vmin;
+        height: 70vmin;
+        border-radius: 50%;
+        border: 6px solid rgba(255, 220, 160, 0.9);
+        box-shadow: 0 0 40px rgba(255, 220, 160, 0.6),
+          0 0 120px rgba(255, 220, 160, 0.4),
+          inset 0 0 40px rgba(255, 220, 160, 0.3);
+        animation: breathe 6s ease-in-out infinite;
+      }
+
+      @keyframes breathe {
+        0% {
+          transform: scale(0.95);
+          opacity: 0.8;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0.95);
+          opacity: 0.8;
+        }
+      }
+
+      /* Label onderin */
+      .label {
+        position: fixed;
+        bottom: 40px;
+        width: 100%;
+        text-align: center;
+        color: white;
+        opacity: 0.8;
+        z-index: 3;
+        letter-spacing: 1px;
+      }
+
+      .label span {
+        display: inline-block;
+        padding: 10px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 20px;
+        font-size: 14px;
       }
     </style>
   </head>
 
   <body>
-    <a-scene embedded vr-mode-ui="enabled:false" renderer="alpha:true">
-      <!-- Camera -->
-      <a-camera position="0 0 0"></a-camera>
+    <!-- Camera -->
+    <video id="camera" autoplay playsinline></video>
 
-      <!-- ADEMHALINGSCIRKEL VAST IN BEELD -->
-      <a-entity position="0 0 -1.5">
-        <a-circle
-          breathing
-          radius="0.6"
-          material="shader: flat; color: #66ccff; opacity: 0.85"
-        >
-        </a-circle>
-      </a-entity>
-    </a-scene>
+    <!-- Ademcirkel -->
+    <div class="overlay">
+      <div class="circle"></div>
+    </div>
+
+    <!-- Tekst -->
+    <div class="label">
+      <span>SCAN &amp; MEDITATE</span>
+    </div>
 
     <script>
-      AFRAME.registerComponent("breathing", {
-        tick: function (t) {
-          const s = 1 + 0.15 * Math.sin(t / 1200);
-          this.el.setAttribute("scale", `${s} ${s} ${s}`);
-        },
-      });
+      // Camera starten
+      navigator.mediaDevices
+        .getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false,
+        })
+        .then((stream) => {
+          document.getElementById("camera").srcObject = stream;
+        })
+        .catch((err) => {
+          alert("Camera toegang geweigerd");
+          console.error(err);
+        });
     </script>
   </body>
 </html>
