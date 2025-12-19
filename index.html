@@ -6,7 +6,7 @@
 
     <style>
       :root {
-        --halo-color: rgba(255, 220, 160, 0.9);
+        --halo-color: rgba(255, 220, 160, 0.95);
         --halo-glow-1: rgba(255, 220, 160, 0.8);
         --halo-glow-2: rgba(255, 220, 160, 0.7);
       }
@@ -16,153 +16,147 @@
         margin: 0;
         width: 100%;
         height: 100%;
-        overflow: hidden;
         background: black;
+        overflow: hidden;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
-      /* CAMERA */
       video {
         position: fixed;
         inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        z-index: 0;
         display: none;
       }
 
-      /* OVERLAY */
       .overlay {
         position: fixed;
         inset: 0;
         display: flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
         pointer-events: none;
-        z-index: 2;
       }
 
-      /* HALO */
       .halo {
         position: absolute;
         border-radius: 50%;
-        border: 3px solid var(--halo-color);
-        box-shadow: 0 0 30px var(--halo-glow-1), 0 0 120px var(--halo-glow-2);
+        border: 4px solid var(--halo-color);
+        box-shadow: 0 0 40px var(--halo-glow-1), 0 0 160px var(--halo-glow-2);
         transform: scale(0.95);
         transition: transform 4s ease-in-out, border 1s ease, box-shadow 1s ease;
       }
 
-      .halo.h1 {
+      .h1 {
         width: 60vmin;
         height: 60vmin;
       }
-      .halo.h2 {
+      .h2 {
         width: 72vmin;
         height: 72vmin;
       }
-      .halo.h3 {
+      .h3 {
         width: 85vmin;
         height: 85vmin;
       }
 
-      /* TEKST */
       .breath-text {
         position: fixed;
         bottom: 10%;
         width: 100%;
         text-align: center;
         color: var(--halo-color);
-        font-size: 32px;
-        letter-spacing: 1px;
-        opacity: 0.95;
-        z-index: 3;
+        font-size: 34px;
         transition: color 1s ease;
       }
 
-      /* START */
+      .hint {
+        position: fixed;
+        top: 8%;
+        width: 100%;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 16px;
+        letter-spacing: 1px;
+        transition: opacity 1s ease;
+      }
+
       .start {
         position: fixed;
         inset: 0;
-        background: black;
         display: flex;
-        align-items: center;
         justify-content: center;
-        z-index: 5;
+        align-items: center;
+        background: black;
       }
 
-      .start button {
-        padding: 18px 30px;
-        font-size: 16px;
+      button {
+        padding: 18px 32px;
+        background: transparent;
         border-radius: 30px;
         border: 1px solid rgba(255, 255, 255, 0.6);
-        background: transparent;
         color: white;
-        cursor: pointer;
+        font-size: 16px;
       }
     </style>
   </head>
 
   <body>
-    <!-- CAMERA -->
     <video id="camera" autoplay playsinline></video>
 
-    <!-- HALO'S -->
     <div class="overlay">
       <div class="halo h3"></div>
       <div class="halo h2"></div>
       <div class="halo h1"></div>
     </div>
 
-    <!-- TEKST -->
+    <div class="hint" id="hint">Kantel je telefoon omhoog</div>
     <div class="breath-text" id="breathText">Inademen</div>
 
-    <!-- START -->
     <div class="start" id="start">
       <button onclick="startSession()">START</button>
     </div>
 
     <script>
-      const text = document.getElementById("breathText");
       const halos = document.querySelectorAll(".halo");
+      const text = document.getElementById("breathText");
+      const hint = document.getElementById("hint");
 
       const cycleTime = 4000;
       let phase = 0;
 
-      const phaseText = ["Inademen", "Vasthouden", "Uitademen", "Vasthouden"];
-      const phaseScale = [1.05, 1.05, 0.95, 0.95];
+      const phases = ["Inademen", "Vasthouden", "Uitademen", "Vasthouden"];
+      const scales = [1.05, 1.05, 0.95, 0.95];
 
       function nextPhase() {
-        text.textContent = phaseText[phase];
-        halos.forEach(
-          (h) => (h.style.transform = `scale(${phaseScale[phase]})`)
-        );
+        text.textContent = phases[phase];
+        halos.forEach((h) => (h.style.transform = `scale(${scales[phase]})`));
         phase = (phase + 1) % 4;
       }
 
-      /* ORIENTATIE → KLEUR */
-      function handleOrientation(event) {
-        const beta = event.beta; // voor/achter kanteling
+      function handleOrientation(e) {
+        const beta = e.beta;
 
-        if (beta < -30) {
-          // TELEFOON OMHOOG
+        // ECHT OMHOOG
+        if (beta < -60) {
           document.documentElement.style.setProperty(
             "--halo-color",
-            "rgba(160, 220, 255, 0.95)"
+            "rgba(120, 190, 255, 1)"
           );
           document.documentElement.style.setProperty(
             "--halo-glow-1",
-            "rgba(160, 220, 255, 0.8)"
+            "rgba(120, 190, 255, 0.9)"
           );
           document.documentElement.style.setProperty(
             "--halo-glow-2",
-            "rgba(160, 220, 255, 0.7)"
+            "rgba(120, 190, 255, 0.8)"
           );
+          hint.style.opacity = 0;
         } else {
-          // NORMAAL
           document.documentElement.style.setProperty(
             "--halo-color",
-            "rgba(255, 220, 160, 0.9)"
+            "rgba(255, 220, 160, 0.95)"
           );
           document.documentElement.style.setProperty(
             "--halo-glow-1",
@@ -172,6 +166,7 @@
             "--halo-glow-2",
             "rgba(255, 220, 160, 0.7)"
           );
+          hint.style.opacity = 1;
         }
       }
 
@@ -179,21 +174,18 @@
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
           .then((stream) => {
-            const video = document.getElementById("camera");
-            video.srcObject = stream;
-            video.style.display = "block";
-            document.getElementById("start").style.display = "none";
+            camera.srcObject = stream;
+            camera.style.display = "block";
+            start.style.display = "none";
 
             nextPhase();
             setInterval(nextPhase, cycleTime);
 
-            // iOS permission
             if (
-              typeof DeviceOrientationEvent !== "undefined" &&
-              typeof DeviceOrientationEvent.requestPermission === "function"
+              typeof DeviceOrientationEvent?.requestPermission === "function"
             ) {
-              DeviceOrientationEvent.requestPermission().then((permission) => {
-                if (permission === "granted") {
+              DeviceOrientationEvent.requestPermission().then((p) => {
+                if (p === "granted") {
                   window.addEventListener(
                     "deviceorientation",
                     handleOrientation
