@@ -111,7 +111,7 @@
       <div class="halo h1"></div>
     </div>
 
-    <div class="hint" id="hint">Kantel je telefoon een klein beetje</div>
+    <div class="hint" id="hint">Houd je telefoon ontspannen vast</div>
     <div class="breath-text" id="breathText">Inademen</div>
 
     <div class="start" id="start">
@@ -120,23 +120,14 @@
 
     <script>
       const halos = document.querySelectorAll(".halo");
-      const text = document.getElementById("breathText");
       const hint = document.getElementById("hint");
 
-      const cycleTime = 4000;
-      let phase = 0;
-
-      const phases = ["Inademen", "Vasthouden", "Uitademen", "Vasthouden"];
-      const scales = [1.05, 1.05, 0.95, 0.95];
-
+      let baseBeta = null;
       let isBlue = false;
       let armed = true;
 
-      function nextPhase() {
-        text.textContent = phases[phase];
-        halos.forEach((h) => (h.style.transform = `scale(${scales[phase]})`));
-        phase = (phase + 1) % 4;
-      }
+      const TOGGLE_DELTA = 3; // 👈 mini kantel (3 graden!)
+      const RESET_DELTA = 1; // terug naar neutraal
 
       function setGold() {
         document.documentElement.style.setProperty(
@@ -151,7 +142,7 @@
           "--halo-glow-2",
           "rgba(255, 220, 160, 0.7)"
         );
-        hint.textContent = "Kantel je telefoon een klein beetje";
+        hint.textContent = "Kantel een klein beetje om te wisselen";
         hint.style.opacity = 1;
       }
 
@@ -173,17 +164,21 @@
       }
 
       function handleOrientation(e) {
-        const beta = e.beta;
+        if (baseBeta === null) {
+          baseBeta = e.beta;
+          hint.textContent = "Kantel je telefoon een klein beetje";
+          return;
+        }
 
-        // MICRO BEWEGING OMHOOG
-        if (beta < -8 && armed) {
+        const delta = e.beta - baseBeta;
+
+        if (delta < -TOGGLE_DELTA && armed) {
           armed = false;
           isBlue = !isBlue;
           isBlue ? setBlue() : setGold();
         }
 
-        // her-armen als je weer neutraal bent
-        if (beta > 5) {
+        if (Math.abs(delta) < RESET_DELTA) {
           armed = true;
         }
       }
@@ -195,9 +190,6 @@
             camera.srcObject = stream;
             camera.style.display = "block";
             start.style.display = "none";
-
-            nextPhase();
-            setInterval(nextPhase, cycleTime);
 
             if (
               typeof DeviceOrientationEvent?.requestPermission === "function"
