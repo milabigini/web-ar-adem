@@ -77,7 +77,7 @@
         width: 100%;
         text-align: center;
         color: rgba(255, 255, 255, 0.6);
-        font-size: 16px;
+        font-size: 15px;
         letter-spacing: 1px;
         transition: opacity 1s ease;
       }
@@ -111,7 +111,7 @@
       <div class="halo h1"></div>
     </div>
 
-    <div class="hint" id="hint">Kantel je telefoon omhoog</div>
+    <div class="hint" id="hint">Kantel je telefoon iets omhoog</div>
     <div class="breath-text" id="breathText">Inademen</div>
 
     <div class="start" id="start">
@@ -129,44 +129,63 @@
       const phases = ["Inademen", "Vasthouden", "Uitademen", "Vasthouden"];
       const scales = [1.05, 1.05, 0.95, 0.95];
 
+      let isBlue = false;
+      let canToggle = true;
+
       function nextPhase() {
         text.textContent = phases[phase];
         halos.forEach((h) => (h.style.transform = `scale(${scales[phase]})`));
         phase = (phase + 1) % 4;
       }
 
+      function setGold() {
+        document.documentElement.style.setProperty(
+          "--halo-color",
+          "rgba(255, 220, 160, 0.95)"
+        );
+        document.documentElement.style.setProperty(
+          "--halo-glow-1",
+          "rgba(255, 220, 160, 0.8)"
+        );
+        document.documentElement.style.setProperty(
+          "--halo-glow-2",
+          "rgba(255, 220, 160, 0.7)"
+        );
+        hint.textContent = "Kantel je telefoon iets omhoog";
+        hint.style.opacity = 1;
+      }
+
+      function setBlue() {
+        document.documentElement.style.setProperty(
+          "--halo-color",
+          "rgba(120, 190, 255, 1)"
+        );
+        document.documentElement.style.setProperty(
+          "--halo-glow-1",
+          "rgba(120, 190, 255, 0.9)"
+        );
+        document.documentElement.style.setProperty(
+          "--halo-glow-2",
+          "rgba(120, 190, 255, 0.85)"
+        );
+        hint.textContent = "Kantel opnieuw om terug te gaan";
+        hint.style.opacity = 0.8;
+      }
+
       function handleOrientation(e) {
         const beta = e.beta;
 
-        // ECHT OMHOOG
-        if (beta < -60) {
-          document.documentElement.style.setProperty(
-            "--halo-color",
-            "rgba(120, 190, 255, 1)"
-          );
-          document.documentElement.style.setProperty(
-            "--halo-glow-1",
-            "rgba(120, 190, 255, 0.9)"
-          );
-          document.documentElement.style.setProperty(
-            "--halo-glow-2",
-            "rgba(120, 190, 255, 0.8)"
-          );
-          hint.style.opacity = 0;
-        } else {
-          document.documentElement.style.setProperty(
-            "--halo-color",
-            "rgba(255, 220, 160, 0.95)"
-          );
-          document.documentElement.style.setProperty(
-            "--halo-glow-1",
-            "rgba(255, 220, 160, 0.8)"
-          );
-          document.documentElement.style.setProperty(
-            "--halo-glow-2",
-            "rgba(255, 220, 160, 0.7)"
-          );
-          hint.style.opacity = 1;
+        // KLEINE BEWEGING OMHOOG
+        if (beta < -20 && canToggle) {
+          canToggle = false;
+          isBlue = !isBlue;
+
+          isBlue ? setBlue() : setGold();
+
+          // cooldown
+          setTimeout(() => {
+            canToggle = true;
+          }, 1200);
         }
       }
 
