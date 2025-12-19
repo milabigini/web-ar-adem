@@ -2,7 +2,7 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>Scan & Meditate – Alignment</title>
+    <title>Scan & Meditate – Alignment Two-Way</title>
 
     <style>
       :root {
@@ -25,7 +25,6 @@
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
-      /* CAMERA VIDEO */
       video#camera {
         position: fixed;
         inset: 0;
@@ -35,7 +34,6 @@
         z-index: 0;
       }
 
-      /* TARGET BOL */
       .target {
         position: fixed;
         top: 6%;
@@ -62,7 +60,6 @@
         }
       }
 
-      /* HALO GROEP */
       .overlay {
         position: fixed;
         inset: 0;
@@ -102,7 +99,6 @@
         height: 85vmin;
       }
 
-      /* TEKST */
       .text {
         position: fixed;
         bottom: 10%;
@@ -110,7 +106,7 @@
         text-align: center;
         color: var(--gold);
         font-size: 32px;
-        transition: color 1s ease;
+        transition: color 0.5s ease;
         z-index: 3;
       }
 
@@ -125,7 +121,6 @@
         z-index: 3;
       }
 
-      /* START */
       .start {
         position: fixed;
         inset: 0;
@@ -176,10 +171,10 @@
 
       let baseBeta = null;
       let offsetY = 0;
-      let activated = false;
-
-      const MOVE_FACTOR = 0.8; // snelheid van beweging
-      const TARGET_Y = -220; // hoogte van bolletje
+      const TARGET_Y = -220;
+      const MOVE_FACTOR = 0.8;
+      let state = "gold"; // 'gold' = startpositie, 'blue' = aangekomen
+      let armed = true;
 
       function setBlue() {
         document.documentElement.style.setProperty("--gold", "var(--blue)");
@@ -194,10 +189,24 @@
         hint.textContent = "Uitgelijnd";
       }
 
-      function handleOrientation(e) {
-        if (activated) return;
+      function setGold() {
+        document.documentElement.style.setProperty(
+          "--gold",
+          "rgba(255,220,160,0.95)"
+        );
+        document.documentElement.style.setProperty(
+          "--gold-glow1",
+          "rgba(255,220,160,0.8)"
+        );
+        document.documentElement.style.setProperty(
+          "--gold-glow2",
+          "rgba(255,220,160,0.7)"
+        );
+        hint.textContent = "Kantel je telefoon zachtjes omhoog";
+      }
 
-        if (baseBeta === null) {
+      function handleOrientation(e) {
+        if (!baseBeta) {
           baseBeta = e.beta;
           return;
         }
@@ -205,21 +214,28 @@
         const delta = baseBeta - e.beta;
         offsetY += delta * MOVE_FACTOR;
 
+        // Beperk offsetY tussen start en TARGET_Y
         offsetY = Math.max(offsetY, TARGET_Y);
         offsetY = Math.min(offsetY, 0);
 
         haloGroup.style.transform = `translateY(${offsetY}px)`;
 
-        if (offsetY <= TARGET_Y + 5) {
-          activated = true;
+        // Twee-wegs logica
+        if (offsetY <= TARGET_Y + 5 && state === "gold") {
+          state = "blue";
           setBlue();
+        }
+
+        if (offsetY >= -5 && state === "blue") {
+          state = "gold";
+          setGold();
         }
       }
 
       function startSession() {
         startScreen.style.display = "none";
 
-        // start camera
+        // Camera
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
           .then((stream) => {
