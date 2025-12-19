@@ -2,7 +2,7 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>Scan & Meditate – Alignment Two-Way</title>
+    <title>Scan & Meditate – Toggle Colors</title>
 
     <style>
       :root {
@@ -155,7 +155,7 @@
       </div>
     </div>
 
-    <div class="hint" id="hint">Kantel je telefoon zachtjes omhoog</div>
+    <div class="hint" id="hint">Kantel mini omhoog om kleur te wisselen</div>
     <div class="text" id="text">Inademen</div>
 
     <div class="start" id="startScreen">
@@ -165,7 +165,6 @@
     <script>
       const haloGroup = document.getElementById("haloGroup");
       const hint = document.getElementById("hint");
-      const text = document.getElementById("text");
       const startScreen = document.getElementById("startScreen");
       const camera = document.getElementById("camera");
 
@@ -173,36 +172,41 @@
       let offsetY = 0;
       const TARGET_Y = -220;
       const MOVE_FACTOR = 0.8;
-      let state = "gold"; // 'gold' = startpositie, 'blue' = aangekomen
-      let armed = true;
 
-      function setBlue() {
-        document.documentElement.style.setProperty("--gold", "var(--blue)");
-        document.documentElement.style.setProperty(
-          "--gold-glow1",
-          "var(--blue-glow1)"
-        );
-        document.documentElement.style.setProperty(
-          "--gold-glow2",
-          "var(--blue-glow2)"
-        );
-        hint.textContent = "Uitgelijnd";
-      }
+      let armed = true; // voorkomt constant togglen
+      let colorState = "gold"; // 'gold' of 'blue'
 
-      function setGold() {
-        document.documentElement.style.setProperty(
-          "--gold",
-          "rgba(255,220,160,0.95)"
-        );
-        document.documentElement.style.setProperty(
-          "--gold-glow1",
-          "rgba(255,220,160,0.8)"
-        );
-        document.documentElement.style.setProperty(
-          "--gold-glow2",
-          "rgba(255,220,160,0.7)"
-        );
-        hint.textContent = "Kantel je telefoon zachtjes omhoog";
+      function toggleColor() {
+        if (colorState === "gold") {
+          document.documentElement.style.setProperty("--gold", "var(--blue)");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "var(--blue-glow1)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "var(--blue-glow2)"
+          );
+          colorState = "blue";
+          hint.textContent =
+            "Blauwe kleur actief. Kantel opnieuw omhoog voor goud.";
+        } else {
+          document.documentElement.style.setProperty(
+            "--gold",
+            "rgba(255,220,160,0.95)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "rgba(255,220,160,0.8)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "rgba(255,220,160,0.7)"
+          );
+          colorState = "gold";
+          hint.textContent =
+            "Goudkleur actief. Kantel omhoog om blauw te kiezen.";
+        }
       }
 
       function handleOrientation(e) {
@@ -213,22 +217,20 @@
 
         const delta = baseBeta - e.beta;
         offsetY += delta * MOVE_FACTOR;
-
-        // Beperk offsetY tussen start en TARGET_Y
         offsetY = Math.max(offsetY, TARGET_Y);
         offsetY = Math.min(offsetY, 0);
 
         haloGroup.style.transform = `translateY(${offsetY}px)`;
 
-        // Twee-wegs logica
-        if (offsetY <= TARGET_Y + 5 && state === "gold") {
-          state = "blue";
-          setBlue();
+        // toggle alleen bij mini omhoog kantel en armed
+        if (delta > 2 && armed) {
+          armed = false;
+          toggleColor();
         }
 
-        if (offsetY >= -5 && state === "blue") {
-          state = "gold";
-          setGold();
+        // her-arm bij terug naar neutraal
+        if (delta < -2) {
+          armed = true;
         }
       }
 
