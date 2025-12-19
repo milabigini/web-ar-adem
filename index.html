@@ -2,13 +2,17 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>Scan & Meditate - Box Breathing</title>
+    <title>Scan & Meditate – Alignment</title>
 
     <style>
       :root {
-        --halo-color: rgba(255, 220, 160, 0.95);
-        --halo-glow-1: rgba(255, 220, 160, 0.8);
-        --halo-glow-2: rgba(255, 220, 160, 0.7);
+        --gold: rgba(255, 220, 160, 0.95);
+        --gold-glow1: rgba(255, 220, 160, 0.8);
+        --gold-glow2: rgba(255, 220, 160, 0.7);
+
+        --blue: rgba(120, 190, 255, 1);
+        --blue-glow1: rgba(120, 190, 255, 0.9);
+        --blue-glow2: rgba(120, 190, 255, 0.85);
       }
 
       html,
@@ -21,15 +25,34 @@
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
-      video {
+      /* TARGET BOL */
+      .target {
         position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: none;
+        top: 6%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--blue);
+        box-shadow: 0 0 20px var(--blue-glow1), 0 0 60px var(--blue-glow2);
+        animation: pulse 4s ease-in-out infinite;
+        z-index: 4;
       }
 
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: translateX(-50%) scale(0.9);
+          opacity: 0.6;
+        }
+        50% {
+          transform: translateX(-50%) scale(1.1);
+          opacity: 1;
+        }
+      }
+
+      /* HALO GROEP */
       .overlay {
         position: fixed;
         inset: 0;
@@ -39,13 +62,17 @@
         pointer-events: none;
       }
 
+      .halo-group {
+        position: relative;
+        transform: translateY(0);
+        transition: transform 0.2s ease-out;
+      }
+
       .halo {
         position: absolute;
         border-radius: 50%;
-        border: 4px solid var(--halo-color);
-        box-shadow: 0 0 40px var(--halo-glow-1), 0 0 160px var(--halo-glow-2);
-        transform: scale(0.95);
-        transition: transform 4s ease-in-out, border 1s ease, box-shadow 1s ease;
+        border: 4px solid var(--gold);
+        box-shadow: 0 0 40px var(--gold-glow1), 0 0 160px var(--gold-glow2);
       }
 
       .h1 {
@@ -61,34 +88,35 @@
         height: 85vmin;
       }
 
-      .breath-text {
+      /* TEKST */
+      .text {
         position: fixed;
         bottom: 10%;
         width: 100%;
         text-align: center;
-        color: var(--halo-color);
-        font-size: 34px;
+        color: var(--gold);
+        font-size: 32px;
         transition: color 1s ease;
       }
 
       .hint {
         position: fixed;
-        top: 8%;
+        top: 12%;
         width: 100%;
         text-align: center;
         color: rgba(255, 255, 255, 0.6);
         font-size: 15px;
         letter-spacing: 1px;
-        transition: opacity 1s ease;
       }
 
+      /* START */
       .start {
         position: fixed;
         inset: 0;
+        background: black;
         display: flex;
         justify-content: center;
         align-items: center;
-        background: black;
       }
 
       button {
@@ -103,109 +131,82 @@
   </head>
 
   <body>
-    <video id="camera" autoplay playsinline></video>
+    <div class="target"></div>
 
     <div class="overlay">
-      <div class="halo h3"></div>
-      <div class="halo h2"></div>
-      <div class="halo h1"></div>
+      <div class="halo-group" id="haloGroup">
+        <div class="halo h3"></div>
+        <div class="halo h2"></div>
+        <div class="halo h1"></div>
+      </div>
     </div>
 
-    <div class="hint" id="hint">Houd je telefoon ontspannen vast</div>
-    <div class="breath-text" id="breathText">Inademen</div>
+    <div class="hint" id="hint">Kantel je telefoon zachtjes omhoog</div>
+    <div class="text" id="text">Inademen</div>
 
     <div class="start" id="start">
-      <button onclick="startSession()">START</button>
+      <button onclick="start()">START</button>
     </div>
 
     <script>
-      const halos = document.querySelectorAll(".halo");
+      const haloGroup = document.getElementById("haloGroup");
       const hint = document.getElementById("hint");
+      const text = document.getElementById("text");
 
       let baseBeta = null;
-      let isBlue = false;
-      let armed = true;
+      let offsetY = 0;
+      let activated = false;
 
-      const TOGGLE_DELTA = 3; // 👈 mini kantel (3 graden!)
-      const RESET_DELTA = 1; // terug naar neutraal
-
-      function setGold() {
-        document.documentElement.style.setProperty(
-          "--halo-color",
-          "rgba(255, 220, 160, 0.95)"
-        );
-        document.documentElement.style.setProperty(
-          "--halo-glow-1",
-          "rgba(255, 220, 160, 0.8)"
-        );
-        document.documentElement.style.setProperty(
-          "--halo-glow-2",
-          "rgba(255, 220, 160, 0.7)"
-        );
-        hint.textContent = "Kantel een klein beetje om te wisselen";
-        hint.style.opacity = 1;
-      }
+      const MOVE_FACTOR = 0.8; // hoe rustig hij beweegt
+      const TARGET_Y = -220; // hoogte van bolletje
 
       function setBlue() {
+        document.documentElement.style.setProperty("--gold", "var(--blue)");
         document.documentElement.style.setProperty(
-          "--halo-color",
-          "rgba(120, 190, 255, 1)"
+          "--gold-glow1",
+          "var(--blue-glow1)"
         );
         document.documentElement.style.setProperty(
-          "--halo-glow-1",
-          "rgba(120, 190, 255, 0.9)"
+          "--gold-glow2",
+          "var(--blue-glow2)"
         );
-        document.documentElement.style.setProperty(
-          "--halo-glow-2",
-          "rgba(120, 190, 255, 0.85)"
-        );
-        hint.textContent = "Kantel opnieuw om terug te gaan";
-        hint.style.opacity = 0.8;
+        hint.textContent = "Uitgelijnd";
       }
 
       function handleOrientation(e) {
+        if (activated) return;
+
         if (baseBeta === null) {
           baseBeta = e.beta;
-          hint.textContent = "Kantel je telefoon een klein beetje";
           return;
         }
 
-        const delta = e.beta - baseBeta;
+        const delta = baseBeta - e.beta;
+        offsetY += delta * MOVE_FACTOR;
 
-        if (delta < -TOGGLE_DELTA && armed) {
-          armed = false;
-          isBlue = !isBlue;
-          isBlue ? setBlue() : setGold();
-        }
+        offsetY = Math.max(offsetY, TARGET_Y);
+        offsetY = Math.min(offsetY, 0);
 
-        if (Math.abs(delta) < RESET_DELTA) {
-          armed = true;
+        haloGroup.style.transform = `translateY(${offsetY}px)`;
+
+        if (offsetY <= TARGET_Y + 5) {
+          activated = true;
+          setBlue();
         }
       }
 
-      function startSession() {
-        navigator.mediaDevices
-          .getUserMedia({ video: { facingMode: "environment" }, audio: false })
-          .then((stream) => {
-            camera.srcObject = stream;
-            camera.style.display = "block";
-            start.style.display = "none";
+      function start() {
+        start.style.display = "none";
 
-            if (
-              typeof DeviceOrientationEvent?.requestPermission === "function"
-            ) {
-              DeviceOrientationEvent.requestPermission().then((p) => {
-                if (p === "granted") {
-                  window.addEventListener(
-                    "deviceorientation",
-                    handleOrientation
-                  );
-                }
-              });
-            } else {
+        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+          DeviceOrientationEvent.requestPermission().then((p) => {
+            if (p === "granted") {
               window.addEventListener("deviceorientation", handleOrientation);
             }
           });
+        } else {
+          window.addEventListener("deviceorientation", handleOrientation);
+        }
       }
     </script>
   </body>
