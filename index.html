@@ -111,7 +111,7 @@
       <div class="halo h1"></div>
     </div>
 
-    <div class="hint" id="hint">Kantel je telefoon iets omhoog</div>
+    <div class="hint" id="hint">Kantel je telefoon een klein beetje</div>
     <div class="breath-text" id="breathText">Inademen</div>
 
     <div class="start" id="start">
@@ -130,7 +130,7 @@
       const scales = [1.05, 1.05, 0.95, 0.95];
 
       let isBlue = false;
-      let canToggle = true;
+      let armed = true;
 
       function nextPhase() {
         text.textContent = phases[phase];
@@ -151,7 +151,7 @@
           "--halo-glow-2",
           "rgba(255, 220, 160, 0.7)"
         );
-        hint.textContent = "Kantel je telefoon iets omhoog";
+        hint.textContent = "Kantel je telefoon een klein beetje";
         hint.style.opacity = 1;
       }
 
@@ -175,17 +175,16 @@
       function handleOrientation(e) {
         const beta = e.beta;
 
-        // KLEINE BEWEGING OMHOOG
-        if (beta < -20 && canToggle) {
-          canToggle = false;
+        // MICRO BEWEGING OMHOOG
+        if (beta < -8 && armed) {
+          armed = false;
           isBlue = !isBlue;
-
           isBlue ? setBlue() : setGold();
+        }
 
-          // cooldown
-          setTimeout(() => {
-            canToggle = true;
-          }, 1200);
+        // her-armen als je weer neutraal bent
+        if (beta > 5) {
+          armed = true;
         }
       }
 
