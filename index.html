@@ -5,6 +5,12 @@
     <title>Scan & Meditate - Box Breathing</title>
 
     <style>
+      :root {
+        --halo-color: rgba(255, 220, 160, 0.9);
+        --halo-glow-1: rgba(255, 220, 160, 0.8);
+        --halo-glow-2: rgba(255, 220, 160, 0.7);
+      }
+
       html,
       body {
         margin: 0;
@@ -37,15 +43,14 @@
         z-index: 2;
       }
 
-      /* HALO GROEP */
+      /* HALO */
       .halo {
         position: absolute;
         border-radius: 50%;
-        border: 3px solid rgba(255, 220, 160, 0.9);
-        box-shadow: 0 0 30px rgba(255, 220, 160, 0.8),
-          0 0 120px rgba(255, 220, 160, 0.7);
+        border: 3px solid var(--halo-color);
+        box-shadow: 0 0 30px var(--halo-glow-1), 0 0 120px var(--halo-glow-2);
         transform: scale(0.95);
-        transition: transform 4s ease-in-out; /* overgang voor in/uit */
+        transition: transform 4s ease-in-out, border 1s ease, box-shadow 1s ease;
       }
 
       .halo.h1 {
@@ -64,15 +69,15 @@
       /* TEKST */
       .breath-text {
         position: fixed;
-        bottom: 10%; /* onderin */
+        bottom: 10%;
         width: 100%;
         text-align: center;
-        color: #ffdca0; /* zelfde kleur als halos */
-        font-size: 32px; /* iets groter */
+        color: var(--halo-color);
+        font-size: 32px;
         letter-spacing: 1px;
         opacity: 0.95;
         z-index: 3;
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        transition: color 1s ease;
       }
 
       /* START */
@@ -94,12 +99,6 @@
         background: transparent;
         color: white;
         cursor: pointer;
-        transition: background 0.3s, color 0.3s;
-      }
-
-      .start button:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #ffdca0;
       }
     </style>
   </head>
@@ -126,18 +125,54 @@
     <script>
       const text = document.getElementById("breathText");
       const halos = document.querySelectorAll(".halo");
-      const cycleTime = 4000; // tijd per fase in ms (4 seconden)
-      let phase = 0; // 0=in,1=hold,2=out,3=hold
+
+      const cycleTime = 4000;
+      let phase = 0;
 
       const phaseText = ["Inademen", "Vasthouden", "Uitademen", "Vasthouden"];
-      const phaseScale = [1.05, 1.05, 0.95, 0.95]; // in/hold/uit/hold
+      const phaseScale = [1.05, 1.05, 0.95, 0.95];
 
       function nextPhase() {
         text.textContent = phaseText[phase];
-        halos.forEach((halo) => {
-          halo.style.transform = `scale(${phaseScale[phase]})`;
-        });
+        halos.forEach(
+          (h) => (h.style.transform = `scale(${phaseScale[phase]})`)
+        );
         phase = (phase + 1) % 4;
+      }
+
+      /* ORIENTATIE → KLEUR */
+      function handleOrientation(event) {
+        const beta = event.beta; // voor/achter kanteling
+
+        if (beta < -30) {
+          // TELEFOON OMHOOG
+          document.documentElement.style.setProperty(
+            "--halo-color",
+            "rgba(160, 220, 255, 0.95)"
+          );
+          document.documentElement.style.setProperty(
+            "--halo-glow-1",
+            "rgba(160, 220, 255, 0.8)"
+          );
+          document.documentElement.style.setProperty(
+            "--halo-glow-2",
+            "rgba(160, 220, 255, 0.7)"
+          );
+        } else {
+          // NORMAAL
+          document.documentElement.style.setProperty(
+            "--halo-color",
+            "rgba(255, 220, 160, 0.9)"
+          );
+          document.documentElement.style.setProperty(
+            "--halo-glow-1",
+            "rgba(255, 220, 160, 0.8)"
+          );
+          document.documentElement.style.setProperty(
+            "--halo-glow-2",
+            "rgba(255, 220, 160, 0.7)"
+          );
+        }
       }
 
       function startSession() {
@@ -149,12 +184,25 @@
             video.style.display = "block";
             document.getElementById("start").style.display = "none";
 
-            nextPhase(); // start meteen
+            nextPhase();
             setInterval(nextPhase, cycleTime);
-          })
-          .catch((err) => {
-            alert("Camera toegang is nodig.");
-            console.error(err);
+
+            // iOS permission
+            if (
+              typeof DeviceOrientationEvent !== "undefined" &&
+              typeof DeviceOrientationEvent.requestPermission === "function"
+            ) {
+              DeviceOrientationEvent.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                  window.addEventListener(
+                    "deviceorientation",
+                    handleOrientation
+                  );
+                }
+              });
+            } else {
+              window.addEventListener("deviceorientation", handleOrientation);
+            }
           });
       }
     </script>
