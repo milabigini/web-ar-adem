@@ -2,11 +2,6 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-
     <title>Scan & Meditate – Box Breathing & Tilt</title>
 
     <style>
@@ -23,11 +18,10 @@
       html,
       body {
         margin: 0;
-        padding: 0;
         width: 100%;
-        height: 100vh;
-        overflow: hidden;
+        height: 100%;
         background: black;
+        overflow: hidden;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
@@ -35,8 +29,8 @@
       video {
         position: fixed;
         inset: 0;
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
         display: none;
         z-index: 0;
@@ -46,15 +40,14 @@
       .start {
         position: fixed;
         inset: 0;
-        width: 100vw;
-        height: 100vh;
         z-index: 10;
       }
 
       .start img {
-        display: block; /* iOS fix */
-        width: 100vw;
-        height: 100vh;
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
       }
 
@@ -163,6 +156,7 @@
   </head>
 
   <body>
+    <!-- CAMERA -->
     <video id="camera" autoplay playsinline></video>
 
     <!-- STARTSCHERM -->
@@ -171,8 +165,10 @@
       <button id="startBtn">START</button>
     </div>
 
+    <!-- TARGET -->
     <div class="target"></div>
 
+    <!-- HALO -->
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
         <div class="halo h3"></div>
@@ -181,7 +177,7 @@
       </div>
     </div>
 
-    <div class="hint">Kantel mini omhoog om kleur te wisselen</div>
+    <div class="hint" id="hint">Kantel mini omhoog om kleur te wisselen</div>
     <div class="text" id="text">Inademen</div>
 
     <script>
@@ -190,9 +186,10 @@
       const startScreen = document.getElementById("startScreen");
       const camera = document.getElementById("camera");
 
+      let offsetY = 0;
       let scale = 1;
 
-      /* ===== BOX BREATHING ===== */
+      /* ===== BOX BREATHING 4–4–4–4 ===== */
       const phases = [
         { label: "Inademen", scale: 1.08 },
         { label: "Vasthouden", scale: 1.08 },
@@ -201,14 +198,72 @@
       ];
       let phaseIndex = 0;
 
+      function applyTransform() {
+        haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${scale})`;
+      }
+
       function nextPhase() {
         const p = phases[phaseIndex];
         text.textContent = p.label;
-        haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
+        scale = p.scale;
+        applyTransform();
         phaseIndex = (phaseIndex + 1) % phases.length;
       }
       setInterval(nextPhase, 4000);
       nextPhase();
+
+      /* ===== TILT ===== */
+      let baseBeta = null;
+      let armed = true;
+      let colorState = "gold";
+
+      function toggleColor() {
+        if (colorState === "gold") {
+          document.documentElement.style.setProperty("--gold", "var(--blue)");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "var(--blue-glow1)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "var(--blue-glow2)"
+          );
+          colorState = "blue";
+        } else {
+          document.documentElement.style.setProperty(
+            "--gold",
+            "rgba(255,220,160,0.95)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "rgba(255,220,160,0.8)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "rgba(255,220,160,0.7)"
+          );
+          colorState = "gold";
+        }
+      }
+
+      function handleOrientation(e) {
+        if (baseBeta === null) {
+          baseBeta = e.beta;
+          return;
+        }
+        const delta = baseBeta - e.beta;
+
+        offsetY += delta * 0.5;
+        offsetY = Math.max(offsetY, -220);
+        offsetY = Math.min(offsetY, 0);
+        applyTransform();
+
+        if (delta > 1 && armed) {
+          armed = false;
+          toggleColor();
+        }
+        if (delta < -1) armed = true;
+      }
 
       /* ===== START ===== */
       document
@@ -222,6 +277,15 @@
           });
           camera.srcObject = stream;
           camera.style.display = "block";
+
+          if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+            const p = await DeviceOrientationEvent.requestPermission();
+            if (p === "granted") {
+              window.addEventListener("deviceorientation", handleOrientation);
+            }
+          } else {
+            window.addEventListener("deviceorientation", handleOrientation);
+          }
         });
     </script>
   </body>
