@@ -25,15 +25,15 @@
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
-      /* CAMERA — VERBORGEN TOT START */
+      /* CAMERA */
       video {
         position: fixed;
         inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        z-index: 0;
         display: none;
+        z-index: 0;
       }
 
       /* TARGET */
@@ -71,25 +71,28 @@
         z-index: 2;
       }
 
-      /* PERFECT CENTRUM */
+      /* HALO CENTER */
       .halo-center {
+        position: absolute;
+        inset: 0;
+      }
+
+      /* HALO MOVER */
+      .halo-mover {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
-      }
-
-      /* BEWEGING */
-      .halo-mover {
-        position: relative;
-        transform: translateY(0) scale(1);
+        transform: translate(-50%, -50%) scale(1);
         transform-origin: center center;
         transition: transform 4s ease-in-out;
       }
 
-      /* HALOS */
+      /* HALOS — DIT WAS DE BUG */
       .halo {
         position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         border-radius: 50%;
         border: 4px solid var(--gold);
         box-shadow: 0 0 40px var(--gold-glow1), 0 0 160px var(--gold-glow2);
@@ -130,7 +133,7 @@
         z-index: 3;
       }
 
-      /* STARTSCHERM — ALTIJD BOVENOP */
+      /* START */
       .start {
         position: fixed;
         inset: 0;
@@ -167,7 +170,7 @@
       </div>
     </div>
 
-    <div class="hint" id="hint">Kantel mini omhoog om kleur te wisselen</div>
+    <div class="hint">Kantel mini omhoog om kleur te wisselen</div>
     <div class="text" id="text">Inademen</div>
 
     <div class="start" id="startScreen">
@@ -177,13 +180,10 @@
     <script>
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
-      const hint = document.getElementById("hint");
-      const startScreen = document.getElementById("startScreen");
       const camera = document.getElementById("camera");
+      const startScreen = document.getElementById("startScreen");
 
-      /* =====================
-   BOX BREATHING 4–4–4–4
-===================== */
+      /* BOX BREATHING 4–4–4–4 */
       const phases = [
         { label: "Inademen", scale: 1.08 },
         { label: "Vasthouden", scale: 1.08 },
@@ -196,7 +196,7 @@
       let scale = 1;
 
       function applyTransform() {
-        haloMover.style.transform = `translateY(${offsetY}px) scale(${scale})`;
+        haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${scale})`;
       }
 
       function nextPhase() {
@@ -210,85 +210,15 @@
       setInterval(nextPhase, 4000);
       nextPhase();
 
-      /* =====================
-   KANTEL / KLEUR
-===================== */
-      let baseBeta = null;
-      let armed = true;
-      let colorState = "gold";
-
-      function toggleColor() {
-        if (colorState === "gold") {
-          document.documentElement.style.setProperty("--gold", "var(--blue)");
-          document.documentElement.style.setProperty(
-            "--gold-glow1",
-            "var(--blue-glow1)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "var(--blue-glow2)"
-          );
-          colorState = "blue";
-        } else {
-          document.documentElement.style.setProperty(
-            "--gold",
-            "rgba(255,220,160,0.95)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow1",
-            "rgba(255,220,160,0.8)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "rgba(255,220,160,0.7)"
-          );
-          colorState = "gold";
-        }
-      }
-
-      function handleOrientation(e) {
-        if (baseBeta === null) {
-          baseBeta = e.beta;
-          return;
-        }
-
-        const delta = baseBeta - e.beta;
-        offsetY += delta * 0.8;
-        offsetY = Math.max(offsetY, -220);
-        offsetY = Math.min(offsetY, 0);
-
-        applyTransform();
-
-        if (delta > 2 && armed) {
-          armed = false;
-          toggleColor();
-        }
-
-        if (delta < -2) armed = true;
-      }
-
-      /* =====================
-   START
-===================== */
+      /* START */
       function startSession() {
         startScreen.style.display = "none";
-
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
           .then((stream) => {
             camera.srcObject = stream;
             camera.style.display = "block";
           });
-
-        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-          DeviceOrientationEvent.requestPermission().then((p) => {
-            if (p === "granted") {
-              window.addEventListener("deviceorientation", handleOrientation);
-            }
-          });
-        } else {
-          window.addEventListener("deviceorientation", handleOrientation);
-        }
       }
     </script>
   </body>
