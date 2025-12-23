@@ -19,9 +19,9 @@
         margin: 0;
         width: 100%;
         height: 100%;
-        background: black;
         overflow: hidden;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        background: black; /* fallback background */
       }
 
       video {
@@ -32,6 +32,7 @@
         object-fit: cover;
         display: none;
         z-index: 0;
+        background: url("blauw.png") center/cover no-repeat; /* fallback image */
       }
 
       .target {
@@ -129,6 +130,8 @@
         position: fixed;
         inset: 0;
         background-image: url("blauw.png");
+        background-size: cover;
+        background-position: center;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -149,7 +152,7 @@
     </style>
   </head>
   <body>
-    <video id="camera" autoplay playsinline></video>
+    <video id="camera" autoplay playsinline muted></video>
 
     <div class="target"></div>
 
@@ -264,8 +267,6 @@
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
-          startScreen.style.display = "none";
-
           // start camera
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -273,9 +274,11 @@
               audio: false,
             });
             camera.srcObject = stream;
-            camera.style.display = "block";
+            camera.style.display = "block"; // video tonen
+            startScreen.style.display = "none"; // startscreen verbergen
           } catch (e) {
             console.error("Camera toegang nodig:", e);
+            alert("Camera niet beschikbaar. Achtergrond blijft zichtbaar.");
           }
 
           // activeer tilt
