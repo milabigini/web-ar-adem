@@ -2,7 +2,7 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>Scan & Meditate – Toggle Colors</title>
+    <title>Scan & Meditate – Box Breathing</title>
 
     <style>
       :root {
@@ -72,8 +72,8 @@
 
       .halo-group {
         position: relative;
-        transform: translateY(0);
-        transition: transform 0.2s ease-out;
+        transform: translateY(0) scale(1);
+        transition: transform 4s ease-in-out;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -105,8 +105,8 @@
         width: 100%;
         text-align: center;
         color: var(--gold);
-        font-size: 32px;
-        transition: color 0.5s ease;
+        font-size: 34px;
+        transition: color 0.5s ease, opacity 0.5s ease;
         z-index: 3;
       }
 
@@ -164,17 +164,45 @@
 
     <script>
       const haloGroup = document.getElementById("haloGroup");
+      const text = document.getElementById("text");
       const hint = document.getElementById("hint");
       const startScreen = document.getElementById("startScreen");
       const camera = document.getElementById("camera");
+
+      /* =========================
+   BOX BREATHING
+========================= */
+
+      const phases = [
+        { label: "Inademen", scale: 1.08 },
+        { label: "Vasthouden", scale: 1.08 },
+        { label: "Uitademen", scale: 0.92 },
+        { label: "Vasthouden", scale: 0.92 },
+      ];
+
+      let phaseIndex = 0;
+
+      function nextPhase() {
+        const phase = phases[phaseIndex];
+        text.textContent = phase.label;
+        haloGroup.style.transform = `translateY(${offsetY}px) scale(${phase.scale})`;
+
+        phaseIndex = (phaseIndex + 1) % phases.length;
+      }
+
+      setInterval(nextPhase, 4000);
+      nextPhase();
+
+      /* =========================
+   KANTEL / KLEUR TOGGLE
+========================= */
 
       let baseBeta = null;
       let offsetY = 0;
       const TARGET_Y = -220;
       const MOVE_FACTOR = 0.8;
-
-      let armed = true; // voorkomt constant togglen
-      let colorState = "gold"; // 'gold' of 'blue'
+      let armed = true;
+      let colorState = "gold";
 
       function toggleColor() {
         if (colorState === "gold") {
@@ -188,8 +216,7 @@
             "var(--blue-glow2)"
           );
           colorState = "blue";
-          hint.textContent =
-            "Blauwe kleur actief. Kantel opnieuw omhoog voor goud.";
+          hint.textContent = "Blauw actief";
         } else {
           document.documentElement.style.setProperty(
             "--gold",
@@ -204,8 +231,7 @@
             "rgba(255,220,160,0.7)"
           );
           colorState = "gold";
-          hint.textContent =
-            "Goudkleur actief. Kantel omhoog om blauw te kiezen.";
+          hint.textContent = "Goud actief";
         }
       }
 
@@ -220,33 +246,34 @@
         offsetY = Math.max(offsetY, TARGET_Y);
         offsetY = Math.min(offsetY, 0);
 
-        haloGroup.style.transform = `translateY(${offsetY}px)`;
+        haloGroup.style.transform = `translateY(${offsetY}px) scale(${
+          phases[(phaseIndex + phases.length - 1) % phases.length].scale
+        })`;
 
-        // toggle alleen bij mini omhoog kantel en armed
         if (delta > 2 && armed) {
           armed = false;
           toggleColor();
         }
 
-        // her-arm bij terug naar neutraal
         if (delta < -2) {
           armed = true;
         }
       }
 
+      /* =========================
+   START
+========================= */
+
       function startSession() {
         startScreen.style.display = "none";
 
-        // Camera
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
           .then((stream) => {
             camera.srcObject = stream;
             camera.style.display = "block";
-          })
-          .catch((err) => console.error("Camera toegang nodig:", err));
+          });
 
-        // Device orientation
         if (typeof DeviceOrientationEvent?.requestPermission === "function") {
           DeviceOrientationEvent.requestPermission().then((p) => {
             if (p === "granted") {
