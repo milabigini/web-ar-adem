@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <title>Scan & Meditate – Box Breathing & Tilt</title>
-
     <style>
       :root {
         --gold: rgba(255, 220, 160, 0.95);
@@ -35,7 +34,6 @@
         z-index: 0;
       }
 
-      /* Target */
       .target {
         position: fixed;
         top: 6%;
@@ -62,7 +60,6 @@
         }
       }
 
-      /* Overlay */
       .overlay {
         position: fixed;
         inset: 0;
@@ -70,13 +67,11 @@
         z-index: 2;
       }
 
-      /* Halo Center */
       .halo-center {
         position: absolute;
         inset: 0;
       }
 
-      /* Halo Mover */
       .halo-mover {
         position: absolute;
         top: 50%;
@@ -86,7 +81,6 @@
         transition: transform 4s ease-in-out;
       }
 
-      /* Halos */
       .halo {
         position: absolute;
         top: 50%;
@@ -110,7 +104,6 @@
         height: 85vmin;
       }
 
-      /* Tekst */
       .text {
         position: fixed;
         bottom: 10%;
@@ -121,7 +114,6 @@
         z-index: 3;
       }
 
-      /* Hint */
       .hint {
         position: fixed;
         top: 12%;
@@ -133,7 +125,6 @@
         z-index: 3;
       }
 
-      /* Start */
       .start {
         position: fixed;
         inset: 0;
@@ -142,6 +133,8 @@
         justify-content: center;
         align-items: center;
         z-index: 10;
+        flex-direction: column;
+        gap: 20px;
       }
 
       button {
@@ -154,7 +147,6 @@
       }
     </style>
   </head>
-
   <body>
     <video id="camera" autoplay playsinline></video>
 
@@ -174,7 +166,8 @@
     <div class="text" id="text">Inademen</div>
 
     <div class="start" id="startScreen">
-      <button onclick="startSession()">START</button>
+      <button id="startBtn">START</button>
+      <button id="enableTiltBtn">Enable Tilt</button>
     </div>
 
     <script>
@@ -183,20 +176,17 @@
       const hint = document.getElementById("hint");
       const startScreen = document.getElementById("startScreen");
       const camera = document.getElementById("camera");
+      let offsetY = 0;
+      let scale = 1;
 
-      /* =====================
-   BOX BREATHING 4–4–4–4
-===================== */
+      /* ===================== BOX BREATHING 4–4–4–4 ===================== */
       const phases = [
         { label: "Inademen", scale: 1.08 },
         { label: "Vasthouden", scale: 1.08 },
         { label: "Uitademen", scale: 0.92 },
         { label: "Vasthouden", scale: 0.92 },
       ];
-
       let phaseIndex = 0;
-      let offsetY = 0;
-      let scale = 1;
 
       function applyTransform() {
         haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${scale})`;
@@ -213,9 +203,7 @@
       setInterval(nextPhase, 4000);
       nextPhase();
 
-      /* =====================
-   KANTEL / KLEUR
-===================== */
+      /* ===================== KANTEL / KLEUR ===================== */
       let baseBeta = null;
       let armed = true;
       let colorState = "gold";
@@ -258,50 +246,46 @@
           baseBeta = e.beta;
           return;
         }
-
         const delta = baseBeta - e.beta;
 
-        // offsetY voor kleine beweging
+        // kleine offset voor mini beweging
         offsetY += delta * 0.5;
         offsetY = Math.max(offsetY, -220);
         offsetY = Math.min(offsetY, 0);
-
         applyTransform();
 
-        // mini omhoog kantel trigger
-        if (delta > 2 && armed) {
+        if (delta > 1 && armed) {
           armed = false;
           toggleColor();
         }
-
-        if (delta < -2) armed = true;
+        if (delta < -1) armed = true;
       }
 
-      /* =====================
-   START
-===================== */
-      function startSession() {
+      /* ===================== START ===================== */
+      document.getElementById("startBtn").addEventListener("click", () => {
         startScreen.style.display = "none";
-
-        // camera pas na start
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
           .then((stream) => {
             camera.srcObject = stream;
             camera.style.display = "block";
           });
+      });
 
-        // DeviceOrientation
-        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-          DeviceOrientationEvent.requestPermission().then((p) => {
-            if (p === "granted") {
+      /* ===================== ENABLE TILT ===================== */
+      document
+        .getElementById("enableTiltBtn")
+        .addEventListener("click", async () => {
+          if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+            let p = await DeviceOrientationEvent.requestPermission();
+            if (p === "granted")
               window.addEventListener("deviceorientation", handleOrientation);
-            }
-          });
-        } else {
-          window.addEventListener("deviceorientation", handleOrientation);
-        }
-      }
+            else alert("Tilt permission denied");
+          } else {
+            window.addEventListener("deviceorientation", handleOrientation);
+          }
+          document.getElementById("enableTiltBtn").style.display = "none";
+        });
     </script>
   </body>
 </html>
