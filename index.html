@@ -21,7 +21,7 @@
         height: 100%;
         overflow: hidden;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        background: black; /* fallback background */
+        background: black;
       }
 
       video {
@@ -32,7 +32,7 @@
         object-fit: cover;
         display: none;
         z-index: 0;
-        background: url("blauw.png") center/cover no-repeat; /* fallback image */
+        background: url("blauw.png") center/cover no-repeat;
       }
 
       .target {
@@ -72,7 +72,6 @@
         position: absolute;
         inset: 0;
       }
-
       .halo-mover {
         position: absolute;
         top: 50%;
@@ -182,7 +181,7 @@
       let offsetY = 0;
       let scale = 1;
 
-      /* ===================== BOX BREATHING 4–4–4–4 ===================== */
+      /* ===================== BOX BREATHING ===================== */
       const phases = [
         { label: "Inademen", scale: 1.08 },
         { label: "Vasthouden", scale: 1.08 },
@@ -190,11 +189,9 @@
         { label: "Vasthouden", scale: 0.92 },
       ];
       let phaseIndex = 0;
-
       function applyTransform() {
         haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${scale})`;
       }
-
       function nextPhase() {
         const p = phases[phaseIndex];
         text.textContent = p.label;
@@ -202,7 +199,6 @@
         applyTransform();
         phaseIndex = (phaseIndex + 1) % phases.length;
       }
-
       setInterval(nextPhase, 4000);
       nextPhase();
 
@@ -210,7 +206,6 @@
       let baseBeta = null;
       let armed = true;
       let colorState = "gold";
-
       function toggleColor() {
         if (colorState === "gold") {
           document.documentElement.style.setProperty("--gold", "var(--blue)");
@@ -243,19 +238,16 @@
             "Goudkleur actief. Kantel omhoog om blauw te kiezen.";
         }
       }
-
       function handleOrientation(e) {
         if (baseBeta === null) {
           baseBeta = e.beta;
           return;
         }
         const delta = baseBeta - e.beta;
-
         offsetY += delta * 0.5;
         offsetY = Math.max(offsetY, -220);
         offsetY = Math.min(offsetY, 0);
         applyTransform();
-
         if (delta > 1 && armed) {
           armed = false;
           toggleColor();
@@ -274,14 +266,17 @@
               audio: false,
             });
             camera.srcObject = stream;
-            camera.style.display = "block"; // video tonen
-            startScreen.style.display = "none"; // startscreen verbergen
+            camera.onloadedmetadata = () => {
+              camera.play();
+              camera.style.display = "block";
+              startScreen.style.display = "none";
+            };
           } catch (e) {
             console.error("Camera toegang nodig:", e);
             alert("Camera niet beschikbaar. Achtergrond blijft zichtbaar.");
           }
 
-          // activeer tilt
+          // DeviceOrientation permissie
           if (typeof DeviceOrientationEvent?.requestPermission === "function") {
             let p = await DeviceOrientationEvent.requestPermission();
             if (p === "granted")
