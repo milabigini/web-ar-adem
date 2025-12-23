@@ -110,10 +110,13 @@
         color: rgba(255, 255, 255, 0.6);
         z-index: 3;
       }
+      #blauw {
+        width: 50px;
+      }
       .start {
         position: fixed;
         inset: 0;
-        background: url("./blauw.png") center/cover no-repeat;
+        background-color: aqua;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -143,6 +146,7 @@
     <div class="text" id="text">Inademen</div>
     <div class="start" id="startScreen">
       <button id="startBtn">START</button>
+      <img id="blauw" src="./blauw.png" alt="" />
     </div>
     <script>
       const camera = document.getElementById("camera");
