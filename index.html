@@ -1,278 +1,56 @@
 <!DOCTYPE html>
 <html lang="nl">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Scan & Meditate – Box Breathing</title>
+<head>
+<meta charset="UTF-8" />
+<title>Scan & Meditate – Box Breathing</title>
 
-    <style>
-      :root {
-        --gold: rgba(255, 220, 160, 0.95);
-        --gold-glow1: rgba(255, 220, 160, 0.8);
-        --gold-glow2: rgba(255, 220, 160, 0.7);
+<style>
+:root {
+  --gold: rgba(255,220,160,0.95);
+  --gold-glow1: rgba(255,220,160,0.8);
+  --gold-glow2: rgba(255,220,160,0.7);
 
-        --blue: rgba(120, 190, 255, 1);
-        --blue-glow1: rgba(120, 190, 255, 0.9);
-        --blue-glow2: rgba(120, 190, 255, 0.85);
-      }
+  --blue: rgba(120,190,255,1);
+  --blue-glow1: rgba(120,190,255,0.9);
+  --blue-glow2: rgba(120,190,255,0.85);
+}
 
-      html,
-      body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        background: black;
-        overflow: hidden;
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  overflow: hidden;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
 
-      video#camera {
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: 0;
-      }
+video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
 
-      /* TARGET */
-      .target {
-        position: fixed;
-        top: 6%;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: var(--blue);
-        box-shadow: 0 0 20px var(--blue-glow1), 0 0 60px var(--blue-glow2);
-        animation: pulse 4s ease-in-out infinite;
-        z-index: 3;
-      }
+/* BLAUW TARGET */
+.target {
+  position: fixed;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 20px var(--blue-glow1), 0 0 60px var(--blue-glow2);
+  animation: pulse 4s ease-in-out infinite;
+  z-index: 3;
+}
 
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: translateX(-50%) scale(0.9);
-          opacity: 0.6;
-        }
-        50% {
-          transform: translateX(-50%) scale(1.1);
-          opacity: 1;
-        }
-      }
+@keyframes pulse {
+  0%,100% { transform: translateX(-50%) scale(0.9); opacity: 0.6; }
+  50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+}
 
-      /* OVERLAY */
-      .overlay {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 2;
-      }
-
-      /* HALO GROUP – ÉCHT GE CENTREERD */
-      .halo-group {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(1);
-        transform-origin: center center;
-        transition: transform 4s ease-in-out;
-      }
-
-      /* HALOS */
-      .halo {
-        position: absolute;
-        border-radius: 50%;
-        border: 4px solid var(--gold);
-        box-shadow: 0 0 40px var(--gold-glow1), 0 0 160px var(--gold-glow2);
-      }
-
-      .h1 {
-        width: 60vmin;
-        height: 60vmin;
-      }
-      .h2 {
-        width: 72vmin;
-        height: 72vmin;
-      }
-      .h3 {
-        width: 85vmin;
-        height: 85vmin;
-      }
-
-      /* TEKST */
-      .text {
-        position: fixed;
-        bottom: 10%;
-        width: 100%;
-        text-align: center;
-        color: var(--gold);
-        font-size: 34px;
-        z-index: 3;
-      }
-
-      .hint {
-        position: fixed;
-        top: 12%;
-        width: 100%;
-        text-align: center;
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 15px;
-        letter-spacing: 1px;
-        z-index: 3;
-      }
-
-      /* START */
-      .start {
-        position: fixed;
-        inset: 0;
-        background: black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 5;
-      }
-
-      button {
-        padding: 18px 32px;
-        background: transparent;
-        border-radius: 30px;
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        color: white;
-        font-size: 16px;
-      }
-    </style>
-  </head>
-
-  <body>
-    <video id="camera" autoplay playsinline></video>
-
-    <div class="target"></div>
-
-    <div class="overlay">
-      <div class="halo-group" id="haloGroup">
-        <div class="halo h3"></div>
-        <div class="halo h2"></div>
-        <div class="halo h1"></div>
-      </div>
-    </div>
-
-    <div class="hint" id="hint">Kantel mini omhoog om kleur te wisselen</div>
-    <div class="text" id="text">Inademen</div>
-
-    <div class="start" id="startScreen">
-      <button onclick="startSession()">START</button>
-    </div>
-
-    <script>
-      const haloGroup = document.getElementById("haloGroup");
-      const text = document.getElementById("text");
-      const hint = document.getElementById("hint");
-      const startScreen = document.getElementById("startScreen");
-      const camera = document.getElementById("camera");
-
-      /* STATE */
-      let offsetY = 0;
-      let scale = 1;
-
-      /* BOX BREATHING 4–4–4–4 */
-      const phases = [
-        { label: "Inademen", scale: 1.08 },
-        { label: "Vasthouden", scale: 1.08 },
-        { label: "Uitademen", scale: 0.92 },
-        { label: "Vasthouden", scale: 0.92 },
-      ];
-
-      let phaseIndex = 0;
-
-      function applyTransform() {
-        haloGroup.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${scale})`;
-      }
-
-      function nextPhase() {
-        const phase = phases[phaseIndex];
-        text.textContent = phase.label;
-        scale = phase.scale;
-        applyTransform();
-        phaseIndex = (phaseIndex + 1) % phases.length;
-      }
-
-      setInterval(nextPhase, 4000);
-      nextPhase();
-
-      /* KANTEL */
-      let baseBeta = null;
-      let armed = true;
-      let colorState = "gold";
-
-      function toggleColor() {
-        if (colorState === "gold") {
-          document.documentElement.style.setProperty("--gold", "var(--blue)");
-          document.documentElement.style.setProperty(
-            "--gold-glow1",
-            "var(--blue-glow1)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "var(--blue-glow2)"
-          );
-          colorState = "blue";
-        } else {
-          document.documentElement.style.setProperty(
-            "--gold",
-            "rgba(255,220,160,0.95)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow1",
-            "rgba(255,220,160,0.8)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "rgba(255,220,160,0.7)"
-          );
-          colorState = "gold";
-        }
-      }
-
-      function handleOrientation(e) {
-        if (baseBeta === null) {
-          baseBeta = e.beta;
-          return;
-        }
-
-        const delta = baseBeta - e.beta;
-        offsetY += delta * 0.8;
-        offsetY = Math.max(offsetY, -220);
-        offsetY = Math.min(offsetY, 0);
-
-        applyTransform();
-
-        if (delta > 2 && armed) {
-          armed = false;
-          toggleColor();
-        }
-
-        if (delta < -2) armed = true;
-      }
-
-      /* START */
-      function startSession() {
-        startScreen.style.display = "none";
-
-        navigator.mediaDevices
-          .getUserMedia({ video: { facingMode: "environment" }, audio: false })
-          .then((stream) => (camera.srcObject = stream));
-
-        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-          DeviceOrientationEvent.requestPermission().then((p) => {
-            if (p === "granted") {
-              window.addEventListener("deviceorientation", handleOrientation);
-            }
-          });
-        } else {
-          window.addEventListener("deviceorientation", handleOrientation);
-        }
-      }
-    </script>
-  </body>
-</html>
+/* OVERLAY *
