@@ -34,6 +34,7 @@
         z-index: 0;
       }
 
+      /* TARGET */
       .target {
         position: fixed;
         top: 6%;
@@ -60,6 +61,7 @@
         }
       }
 
+      /* HALO */
       .overlay {
         position: fixed;
         inset: 0;
@@ -74,9 +76,6 @@
         position: relative;
         transform: translateY(0) scale(1);
         transition: transform 4s ease-in-out;
-        display: flex;
-        justify-content: center;
-        align-items: center;
       }
 
       .halo {
@@ -99,6 +98,7 @@
         height: 85vmin;
       }
 
+      /* TEKST */
       .text {
         position: fixed;
         bottom: 10%;
@@ -106,7 +106,6 @@
         text-align: center;
         color: var(--gold);
         font-size: 34px;
-        transition: color 0.5s ease, opacity 0.5s ease;
         z-index: 3;
       }
 
@@ -121,6 +120,7 @@
         z-index: 3;
       }
 
+      /* START */
       .start {
         position: fixed;
         inset: 0;
@@ -169,10 +169,15 @@
       const startScreen = document.getElementById("startScreen");
       const camera = document.getElementById("camera");
 
-      /* =========================
-   BOX BREATHING
-========================= */
+      /* ======================
+   STATE
+====================== */
+      let offsetY = 0;
+      let scale = 1;
 
+      /* ======================
+   BOX BREATHING
+====================== */
       const phases = [
         { label: "Inademen", scale: 1.08 },
         { label: "Vasthouden", scale: 1.08 },
@@ -182,25 +187,25 @@
 
       let phaseIndex = 0;
 
+      function applyTransform() {
+        haloGroup.style.transform = `translateY(${offsetY}px) scale(${scale})`;
+      }
+
       function nextPhase() {
         const phase = phases[phaseIndex];
         text.textContent = phase.label;
-        haloGroup.style.transform = `translateY(${offsetY}px) scale(${phase.scale})`;
-
+        scale = phase.scale;
+        applyTransform();
         phaseIndex = (phaseIndex + 1) % phases.length;
       }
 
       setInterval(nextPhase, 4000);
       nextPhase();
 
-      /* =========================
-   KANTEL / KLEUR TOGGLE
-========================= */
-
+      /* ======================
+   KANTEL / KLEUR
+====================== */
       let baseBeta = null;
-      let offsetY = 0;
-      const TARGET_Y = -220;
-      const MOVE_FACTOR = 0.8;
       let armed = true;
       let colorState = "gold";
 
@@ -236,19 +241,17 @@
       }
 
       function handleOrientation(e) {
-        if (!baseBeta) {
+        if (baseBeta === null) {
           baseBeta = e.beta;
           return;
         }
 
         const delta = baseBeta - e.beta;
-        offsetY += delta * MOVE_FACTOR;
-        offsetY = Math.max(offsetY, TARGET_Y);
+        offsetY += delta * 0.8;
+        offsetY = Math.max(offsetY, -220);
         offsetY = Math.min(offsetY, 0);
 
-        haloGroup.style.transform = `translateY(${offsetY}px) scale(${
-          phases[(phaseIndex + phases.length - 1) % phases.length].scale
-        })`;
+        applyTransform();
 
         if (delta > 2 && armed) {
           armed = false;
@@ -260,10 +263,9 @@
         }
       }
 
-      /* =========================
+      /* ======================
    START
-========================= */
-
+====================== */
       function startSession() {
         startScreen.style.display = "none";
 
@@ -271,7 +273,6 @@
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
           .then((stream) => {
             camera.srcObject = stream;
-            camera.style.display = "block";
           });
 
         if (typeof DeviceOrientationEvent?.requestPermission === "function") {
