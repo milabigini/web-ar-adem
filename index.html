@@ -128,7 +128,7 @@
       .start {
         position: fixed;
         inset: 0;
-        background: black;
+        background: rgba(0, 0, 0, 0.7);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -144,12 +144,7 @@
         border: 1px solid rgba(255, 255, 255, 0.6);
         color: white;
         font-size: 16px;
-      }
-
-      /* Start-knop onzichtbaar */
-      #startBtn {
-        opacity: 0;
-        pointer-events: none;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -173,7 +168,6 @@
 
     <div class="start" id="startScreen">
       <button id="startBtn">START</button>
-      <button id="enableTiltBtn">Enable Tilt</button>
     </div>
 
     <script>
@@ -254,7 +248,6 @@
         }
         const delta = baseBeta - e.beta;
 
-        // kleine offset voor mini beweging
         offsetY += delta * 0.5;
         offsetY = Math.max(offsetY, -220);
         offsetY = Math.min(offsetY, 0);
@@ -268,20 +261,24 @@
       }
 
       /* ===================== START ===================== */
-      document.getElementById("startBtn").addEventListener("click", () => {
-        startScreen.style.display = "none";
-        navigator.mediaDevices
-          .getUserMedia({ video: { facingMode: "environment" }, audio: false })
-          .then((stream) => {
+      document
+        .getElementById("startBtn")
+        .addEventListener("click", async () => {
+          startScreen.style.display = "none";
+
+          // start camera
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: "environment" },
+              audio: false,
+            });
             camera.srcObject = stream;
             camera.style.display = "block";
-          });
-      });
+          } catch (e) {
+            console.error("Camera toegang nodig:", e);
+          }
 
-      /* ===================== ENABLE TILT ===================== */
-      document
-        .getElementById("enableTiltBtn")
-        .addEventListener("click", async () => {
+          // activeer tilt
           if (typeof DeviceOrientationEvent?.requestPermission === "function") {
             let p = await DeviceOrientationEvent.requestPermission();
             if (p === "granted")
@@ -290,7 +287,6 @@
           } else {
             window.addEventListener("deviceorientation", handleOrientation);
           }
-          document.getElementById("enableTiltBtn").style.display = "none";
         });
     </script>
   </body>
