@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Scan & Meditate</title>
+
+    <title>Scan & Meditate – Box Breathing & Tilt</title>
 
     <style>
       :root {
@@ -22,25 +23,57 @@
       html,
       body {
         margin: 0;
+        padding: 0;
         width: 100%;
-        height: 100%;
+        height: 100vh;
         overflow: hidden;
         background: black;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
-      /* CAMERA */
+      /* ================= CAMERA ================= */
       video {
         position: fixed;
         inset: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         object-fit: cover;
-        z-index: 0;
         display: none;
+        z-index: 0;
       }
 
-      /* TARGET BOL */
+      /* ================= STARTSCHERM ================= */
+      .start {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10;
+      }
+
+      .start img {
+        display: block; /* iOS fix */
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+      }
+
+      .start button {
+        position: absolute;
+        bottom: 12%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 18px 42px;
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        background: rgba(0, 0, 0, 0.25);
+        color: white;
+        font-size: 18px;
+        letter-spacing: 2px;
+        backdrop-filter: blur(6px);
+      }
+
+      /* ================= TARGET ================= */
       .target {
         position: fixed;
         top: 6%;
@@ -67,7 +100,7 @@
         }
       }
 
-      /* HALO */
+      /* ================= HALO ================= */
       .overlay {
         position: fixed;
         inset: 0;
@@ -106,14 +139,14 @@
         height: 85vmin;
       }
 
-      /* TEKST */
+      /* ================= TEKST ================= */
       .text {
         position: fixed;
         bottom: 10%;
         width: 100%;
         text-align: center;
-        font-size: 34px;
         color: var(--gold);
+        font-size: 34px;
         z-index: 3;
       }
 
@@ -122,35 +155,21 @@
         top: 12%;
         width: 100%;
         text-align: center;
-        font-size: 14px;
         color: rgba(255, 255, 255, 0.6);
+        font-size: 15px;
         z-index: 3;
-      }
-
-      /* STARTSCHERM */
-      .start {
-        position: fixed;
-        inset: 0;
-        background: url("./blauw.png") center/cover no-repeat;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-      }
-
-      .start button {
-        padding: 18px 42px;
-        border-radius: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.7);
-        background: rgba(0, 0, 0, 0.25);
-        color: white;
-        font-size: 16px;
       }
     </style>
   </head>
 
   <body>
-    <video id="camera" autoplay muted playsinline></video>
+    <video id="camera" autoplay playsinline></video>
+
+    <!-- STARTSCHERM -->
+    <div class="start" id="startScreen">
+      <img src="./blauw.png" alt="Beginscherm" />
+      <button id="startBtn">START</button>
+    </div>
 
     <div class="target"></div>
 
@@ -162,21 +181,18 @@
       </div>
     </div>
 
-    <div class="hint" id="hint">Kantel mini omhoog om kleur te wisselen</div>
+    <div class="hint">Kantel mini omhoog om kleur te wisselen</div>
     <div class="text" id="text">Inademen</div>
 
-    <div class="start" id="startScreen">
-      <button id="startBtn">START</button>
-    </div>
-
     <script>
-      const camera = document.getElementById("camera");
-      const startScreen = document.getElementById("startScreen");
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
-      const hint = document.getElementById("hint");
+      const startScreen = document.getElementById("startScreen");
+      const camera = document.getElementById("camera");
 
-      /* ================= BOX BREATHING 4–4–4–4 ================= */
+      let scale = 1;
+
+      /* ===== BOX BREATHING ===== */
       const phases = [
         { label: "Inademen", scale: 1.08 },
         { label: "Vasthouden", scale: 1.08 },
@@ -184,76 +200,17 @@
         { label: "Vasthouden", scale: 0.92 },
       ];
       let phaseIndex = 0;
-      let offsetY = 0;
 
-      function updateBreath() {
+      function nextPhase() {
         const p = phases[phaseIndex];
         text.textContent = p.label;
-        haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${p.scale})`;
+        haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
         phaseIndex = (phaseIndex + 1) % phases.length;
       }
-      setInterval(updateBreath, 4000);
-      updateBreath();
+      setInterval(nextPhase, 4000);
+      nextPhase();
 
-      /* ================= TILT / KLEUR TOGGLE ================= */
-      let baseBeta = null;
-      let armed = true;
-      let colorState = "gold";
-
-      function toggleColor() {
-        if (colorState === "gold") {
-          document.documentElement.style.setProperty("--gold", "var(--blue)");
-          document.documentElement.style.setProperty(
-            "--gold-glow1",
-            "var(--blue-glow1)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "var(--blue-glow2)"
-          );
-          hint.textContent = "Blauw actief — kantel opnieuw omhoog voor goud";
-          colorState = "blue";
-        } else {
-          document.documentElement.style.setProperty(
-            "--gold",
-            "rgba(255,220,160,0.95)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow1",
-            "rgba(255,220,160,0.8)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "rgba(255,220,160,0.7)"
-          );
-          hint.textContent = "Goud actief — kantel omhoog voor blauw";
-          colorState = "gold";
-        }
-      }
-
-      function handleOrientation(e) {
-        if (baseBeta === null) {
-          baseBeta = e.beta;
-          return;
-        }
-
-        const delta = baseBeta - e.beta;
-
-        offsetY += delta * 0.5;
-        offsetY = Math.max(-220, Math.min(0, offsetY));
-
-        haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${
-          phases[(phaseIndex - 1 + 4) % 4].scale
-        })`;
-
-        if (delta > 1 && armed) {
-          armed = false;
-          toggleColor();
-        }
-        if (delta < -1) armed = true;
-      }
-
-      /* ================= START ================= */
+      /* ===== START ===== */
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
@@ -265,15 +222,6 @@
           });
           camera.srcObject = stream;
           camera.style.display = "block";
-
-          if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-            const p = await DeviceOrientationEvent.requestPermission();
-            if (p === "granted") {
-              window.addEventListener("deviceorientation", handleOrientation);
-            }
-          } else {
-            window.addEventListener("deviceorientation", handleOrientation);
-          }
         });
     </script>
   </body>
