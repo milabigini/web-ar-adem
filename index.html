@@ -61,23 +61,25 @@
         }
       }
 
-      /* HALO */
+      /* OVERLAY */
       .overlay {
         position: fixed;
         inset: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         pointer-events: none;
         z-index: 2;
       }
 
+      /* HALO GROUP – ÉCHT GE CENTREERD */
       .halo-group {
-        position: relative;
-        transform: translateY(0) scale(1);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        transform-origin: center center;
         transition: transform 4s ease-in-out;
       }
 
+      /* HALOS */
       .halo {
         position: absolute;
         border-radius: 50%;
@@ -169,15 +171,11 @@
       const startScreen = document.getElementById("startScreen");
       const camera = document.getElementById("camera");
 
-      /* ======================
-   STATE
-====================== */
+      /* STATE */
       let offsetY = 0;
       let scale = 1;
 
-      /* ======================
-   BOX BREATHING
-====================== */
+      /* BOX BREATHING 4–4–4–4 */
       const phases = [
         { label: "Inademen", scale: 1.08 },
         { label: "Vasthouden", scale: 1.08 },
@@ -188,7 +186,7 @@
       let phaseIndex = 0;
 
       function applyTransform() {
-        haloGroup.style.transform = `translateY(${offsetY}px) scale(${scale})`;
+        haloGroup.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${scale})`;
       }
 
       function nextPhase() {
@@ -202,9 +200,7 @@
       setInterval(nextPhase, 4000);
       nextPhase();
 
-      /* ======================
-   KANTEL / KLEUR
-====================== */
+      /* KANTEL */
       let baseBeta = null;
       let armed = true;
       let colorState = "gold";
@@ -221,7 +217,6 @@
             "var(--blue-glow2)"
           );
           colorState = "blue";
-          hint.textContent = "Blauw actief";
         } else {
           document.documentElement.style.setProperty(
             "--gold",
@@ -236,7 +231,6 @@
             "rgba(255,220,160,0.7)"
           );
           colorState = "gold";
-          hint.textContent = "Goud actief";
         }
       }
 
@@ -258,22 +252,16 @@
           toggleColor();
         }
 
-        if (delta < -2) {
-          armed = true;
-        }
+        if (delta < -2) armed = true;
       }
 
-      /* ======================
-   START
-====================== */
+      /* START */
       function startSession() {
         startScreen.style.display = "none";
 
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
-          .then((stream) => {
-            camera.srcObject = stream;
-          });
+          .then((stream) => (camera.srcObject = stream));
 
         if (typeof DeviceOrientationEvent?.requestPermission === "function") {
           DeviceOrientationEvent.requestPermission().then((p) => {
