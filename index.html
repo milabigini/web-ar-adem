@@ -2,7 +2,7 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
-    <title>Scan & Meditate – Box Breathing</title>
+    <title>Scan & Meditate – Box Breathing & Tilt</title>
 
     <style>
       :root {
@@ -25,7 +25,6 @@
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
 
-      /* CAMERA */
       video {
         position: fixed;
         inset: 0;
@@ -36,7 +35,7 @@
         z-index: 0;
       }
 
-      /* TARGET */
+      /* Target */
       .target {
         position: fixed;
         top: 6%;
@@ -63,7 +62,7 @@
         }
       }
 
-      /* OVERLAY */
+      /* Overlay */
       .overlay {
         position: fixed;
         inset: 0;
@@ -71,13 +70,13 @@
         z-index: 2;
       }
 
-      /* HALO CENTER */
+      /* Halo Center */
       .halo-center {
         position: absolute;
         inset: 0;
       }
 
-      /* HALO MOVER */
+      /* Halo Mover */
       .halo-mover {
         position: absolute;
         top: 50%;
@@ -87,7 +86,7 @@
         transition: transform 4s ease-in-out;
       }
 
-      /* HALOS — DIT WAS DE BUG */
+      /* Halos */
       .halo {
         position: absolute;
         top: 50%;
@@ -111,7 +110,7 @@
         height: 85vmin;
       }
 
-      /* TEKST */
+      /* Tekst */
       .text {
         position: fixed;
         bottom: 10%;
@@ -122,6 +121,7 @@
         z-index: 3;
       }
 
+      /* Hint */
       .hint {
         position: fixed;
         top: 12%;
@@ -133,7 +133,7 @@
         z-index: 3;
       }
 
-      /* START */
+      /* Start */
       .start {
         position: fixed;
         inset: 0;
@@ -170,7 +170,7 @@
       </div>
     </div>
 
-    <div class="hint">Kantel mini omhoog om kleur te wisselen</div>
+    <div class="hint" id="hint">Kantel mini omhoog om kleur te wisselen</div>
     <div class="text" id="text">Inademen</div>
 
     <div class="start" id="startScreen">
@@ -180,10 +180,13 @@
     <script>
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
-      const camera = document.getElementById("camera");
+      const hint = document.getElementById("hint");
       const startScreen = document.getElementById("startScreen");
+      const camera = document.getElementById("camera");
 
-      /* BOX BREATHING 4–4–4–4 */
+      /* =====================
+   BOX BREATHING 4–4–4–4
+===================== */
       const phases = [
         { label: "Inademen", scale: 1.08 },
         { label: "Vasthouden", scale: 1.08 },
@@ -210,15 +213,94 @@
       setInterval(nextPhase, 4000);
       nextPhase();
 
-      /* START */
+      /* =====================
+   KANTEL / KLEUR
+===================== */
+      let baseBeta = null;
+      let armed = true;
+      let colorState = "gold";
+
+      function toggleColor() {
+        if (colorState === "gold") {
+          document.documentElement.style.setProperty("--gold", "var(--blue)");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "var(--blue-glow1)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "var(--blue-glow2)"
+          );
+          colorState = "blue";
+          hint.textContent =
+            "Blauwe kleur actief. Kantel opnieuw omhoog voor goud.";
+        } else {
+          document.documentElement.style.setProperty(
+            "--gold",
+            "rgba(255,220,160,0.95)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "rgba(255,220,160,0.8)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "rgba(255,220,160,0.7)"
+          );
+          colorState = "gold";
+          hint.textContent =
+            "Goudkleur actief. Kantel omhoog om blauw te kiezen.";
+        }
+      }
+
+      function handleOrientation(e) {
+        if (baseBeta === null) {
+          baseBeta = e.beta;
+          return;
+        }
+
+        const delta = baseBeta - e.beta;
+
+        // offsetY voor kleine beweging
+        offsetY += delta * 0.5;
+        offsetY = Math.max(offsetY, -220);
+        offsetY = Math.min(offsetY, 0);
+
+        applyTransform();
+
+        // mini omhoog kantel trigger
+        if (delta > 2 && armed) {
+          armed = false;
+          toggleColor();
+        }
+
+        if (delta < -2) armed = true;
+      }
+
+      /* =====================
+   START
+===================== */
       function startSession() {
         startScreen.style.display = "none";
+
+        // camera pas na start
         navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "environment" }, audio: false })
           .then((stream) => {
             camera.srcObject = stream;
             camera.style.display = "block";
           });
+
+        // DeviceOrientation
+        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+          DeviceOrientationEvent.requestPermission().then((p) => {
+            if (p === "granted") {
+              window.addEventListener("deviceorientation", handleOrientation);
+            }
+          });
+        } else {
+          window.addEventListener("deviceorientation", handleOrientation);
+        }
       }
     </script>
   </body>
