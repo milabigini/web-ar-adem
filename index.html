@@ -13,6 +13,10 @@
         --gold: rgba(255, 220, 160, 0.95);
         --gold-glow1: rgba(255, 220, 160, 0.8);
         --gold-glow2: rgba(255, 220, 160, 0.7);
+
+        --blue: rgba(120, 190, 255, 1);
+        --blue-glow1: rgba(120, 190, 255, 0.9);
+        --blue-glow2: rgba(120, 190, 255, 0.85);
       }
 
       html,
@@ -35,6 +39,7 @@
         z-index: 0;
       }
 
+      /* HALO */
       .overlay {
         position: fixed;
         inset: 0;
@@ -46,7 +51,7 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(0.9);
+        transform: translate(-50%, -50%) scale(0.94);
         transition: transform 4s ease-in-out;
       }
 
@@ -73,6 +78,7 @@
         height: 76vmin;
       }
 
+      /* TEKST */
       .text {
         position: fixed;
         bottom: 11%;
@@ -90,8 +96,8 @@
         position: fixed;
         inset: 0;
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
         font-size: 110px;
         font-weight: 300;
         color: white;
@@ -100,6 +106,7 @@
         transition: opacity 0.4s ease;
       }
 
+      /* START */
       .start {
         position: fixed;
         inset: 0;
@@ -107,8 +114,8 @@
         background-size: cover;
         background-position: center;
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
         z-index: 10;
       }
 
@@ -148,7 +155,7 @@
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
 
-      /* BOX BREATHING */
+      /* ========== BOX BREATHING ========== */
       const phases = [
         { label: "Inademen", scale: 1.06 },
         { label: "Vasthouden", scale: 1.06 },
@@ -157,7 +164,15 @@
       ];
 
       let phaseIndex = 0;
+      let offsetY = 0;
       let breathingTimer = null;
+
+      function updateBreath() {
+        const p = phases[phaseIndex];
+        text.textContent = p.label;
+        haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${p.scale})`;
+        phaseIndex = (phaseIndex + 1) % phases.length;
+      }
 
       function startBreathing() {
         text.style.opacity = 1;
@@ -165,14 +180,60 @@
         breathingTimer = setInterval(updateBreath, 4000);
       }
 
-      function updateBreath() {
-        const p = phases[phaseIndex];
-        text.textContent = p.label;
-        haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
-        phaseIndex = (phaseIndex + 1) % phases.length;
+      /* ========== TILT / KLEUR ========== */
+      let baseBeta = null;
+      let armed = true;
+      let colorState = "gold";
+
+      function toggleColor() {
+        if (colorState === "gold") {
+          document.documentElement.style.setProperty("--gold", "var(--blue)");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "var(--blue-glow1)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "var(--blue-glow2)"
+          );
+          colorState = "blue";
+        } else {
+          document.documentElement.style.setProperty(
+            "--gold",
+            "rgba(255,220,160,0.95)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "rgba(255,220,160,0.8)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "rgba(255,220,160,0.7)"
+          );
+          colorState = "gold";
+        }
       }
 
-      /* START + COUNTDOWN */
+      function handleOrientation(e) {
+        if (baseBeta === null) {
+          baseBeta = e.beta;
+          return;
+        }
+
+        const delta = baseBeta - e.beta;
+
+        offsetY += delta * 0.45;
+        offsetY = Math.max(-200, Math.min(0, offsetY));
+
+        if (delta > 1 && armed) {
+          armed = false;
+          toggleColor();
+        }
+
+        if (delta < -1) armed = true;
+      }
+
+      /* ========== START ========== */
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
@@ -185,6 +246,15 @@
           camera.srcObject = stream;
           camera.style.display = "block";
 
+          if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+            const p = await DeviceOrientationEvent.requestPermission();
+            if (p === "granted") {
+              window.addEventListener("deviceorientation", handleOrientation);
+            }
+          } else {
+            window.addEventListener("deviceorientation", handleOrientation);
+          }
+
           let count = 3;
           countdown.textContent = count;
           countdown.style.opacity = 1;
@@ -194,10 +264,7 @@
             if (count === 0) {
               clearInterval(timer);
               countdown.style.opacity = 0;
-
-              setTimeout(() => {
-                startBreathing();
-              }, 400);
+              setTimeout(startBreathing, 400);
             } else {
               countdown.textContent = count;
             }
