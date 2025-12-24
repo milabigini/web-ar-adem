@@ -127,11 +127,48 @@
         color: white;
         font-size: 16px;
       }
+
+      /* TILT INDICATOR */
+      .tilt-indicator {
+        position: fixed;
+        top: 5%;
+        width: 100%;
+        text-align: center;
+        z-index: 4;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .indicator-bullet {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: blue;
+        transition: background-color 0.3s ease;
+      }
+
+      .indicator-text {
+        font-size: 18px;
+        color: white;
+        text-shadow: 0 0 6px black;
+        transition: color 0.3s ease;
+      }
     </style>
   </head>
 
   <body>
     <video id="camera" autoplay muted playsinline></video>
+
+    <!-- TILT INDICATOR -->
+    <div class="tilt-indicator" id="tiltIndicator">
+      <div class="indicator-bullet" id="indicatorBullet"></div>
+      <div class="indicator-text" id="indicatorText">
+        Kantel je telefoon naar boven om hem blauw te maken
+      </div>
+    </div>
 
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
@@ -154,6 +191,9 @@
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
+
+      const indicatorText = document.getElementById("indicatorText");
+      const indicatorBullet = document.getElementById("indicatorBullet");
 
       /* ========== BOX BREATHING ========== */
       const phases = [
@@ -197,6 +237,11 @@
             "var(--blue-glow2)"
           );
           colorState = "blue";
+
+          indicatorText.textContent =
+            "Kantel je telefoon naar boven om hem goud te maken";
+          indicatorBullet.style.backgroundColor = "rgba(255,220,160,0.95)"; // goud
+          indicatorText.style.color = "rgba(255,220,160,0.95)";
         } else {
           document.documentElement.style.setProperty(
             "--gold",
@@ -211,6 +256,11 @@
             "rgba(255,220,160,0.7)"
           );
           colorState = "gold";
+
+          indicatorText.textContent =
+            "Kantel je telefoon naar boven om hem blauw te maken";
+          indicatorBullet.style.backgroundColor = "rgba(120,190,255,1)"; // blauw
+          indicatorText.style.color = "rgba(120,190,255,1)";
         }
       }
 
