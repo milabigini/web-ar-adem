@@ -11,9 +11,9 @@
     <style>
       :root {
         --gold: #fafbfa; /* startkleur halo */
-        /* grijzige glow */
-        --gold-glow1: rgba(240, 240, 240, 0.947);
-        --gold-glow2: rgb(255 255 255 / 93%);
+        /* witte glow zonder grijzig effect */
+        --gold-glow1: rgba(250, 251, 250, 0.7);
+        --gold-glow2: rgba(250, 251, 250, 0.4);
 
         --blue: #61988c; /* groenige kantelkleur */
         --blue-glow1: rgba(97, 152, 140, 0.7);
@@ -196,7 +196,7 @@
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
-      /* ========== BOX BREATHING ========== */
+      /* BOX BREATHING */
       const phases = [
         { label: "Inademen", scale: 1.06 },
         { label: "Vasthouden", scale: 1.06 },
@@ -220,7 +220,7 @@
         breathingTimer = setInterval(updateBreath, 4000);
       }
 
-      /* ========== TILT / KLEUR ========== */
+      /* TILT / KLEUR */
       let baseBeta = null;
       let armed = true;
       let colorState = "gold";
@@ -246,11 +246,11 @@
           document.documentElement.style.setProperty("--gold", "#fafbfa");
           document.documentElement.style.setProperty(
             "--gold-glow1",
-            "rgba(240,240,240,0.6)"
+            "rgba(250,251,250,0.7)"
           );
           document.documentElement.style.setProperty(
             "--gold-glow2",
-            "rgba(220,220,220,0.4)"
+            "rgba(250,251,250,0.4)"
           );
           colorState = "gold";
 
@@ -273,11 +273,10 @@
           armed = false;
           toggleColor();
         }
-
         if (delta < -1) armed = true;
       }
 
-      /* ========== START ========== */
+      /* START */
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
@@ -292,9 +291,8 @@
 
           if (typeof DeviceOrientationEvent?.requestPermission === "function") {
             const p = await DeviceOrientationEvent.requestPermission();
-            if (p === "granted") {
+            if (p === "granted")
               window.addEventListener("deviceorientation", handleOrientation);
-            }
           } else {
             window.addEventListener("deviceorientation", handleOrientation);
           }
