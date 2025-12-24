@@ -7,15 +7,18 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>Scan & Meditate</title>
+
     <style>
       :root {
         --gold: rgba(255, 220, 160, 0.95);
         --gold-glow1: rgba(255, 220, 160, 0.8);
         --gold-glow2: rgba(255, 220, 160, 0.7);
+
         --blue: rgba(120, 190, 255, 1);
         --blue-glow1: rgba(120, 190, 255, 0.9);
         --blue-glow2: rgba(120, 190, 255, 0.85);
       }
+
       html,
       body {
         margin: 0;
@@ -25,6 +28,7 @@
         background: black;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       }
+
       video {
         position: fixed;
         inset: 0;
@@ -34,19 +38,22 @@
         display: none;
         z-index: 0;
       }
+
+      /* target bolletje boven */
       .target {
         position: fixed;
         top: 6%;
         left: 50%;
         transform: translateX(-50%);
-        width: 26px;
-        height: 26px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         background: var(--blue);
-        box-shadow: 0 0 20px var(--blue-glow1), 0 0 60px var(--blue-glow2);
+        box-shadow: 0 0 14px var(--blue-glow1), 0 0 40px var(--blue-glow2);
         animation: pulse 4s ease-in-out infinite;
         z-index: 3;
       }
+
       @keyframes pulse {
         0%,
         100% {
@@ -54,16 +61,18 @@
           opacity: 0.6;
         }
         50% {
-          transform: translateX(-50%) scale(1.1);
+          transform: translateX(-50%) scale(1.05);
           opacity: 1;
         }
       }
+
       .overlay {
         position: fixed;
         inset: 0;
         pointer-events: none;
         z-index: 2;
       }
+
       .halo-mover {
         position: absolute;
         top: 50%;
@@ -71,83 +80,81 @@
         transform: translate(-50%, -50%) scale(1);
         transition: transform 4s ease-in-out;
       }
+
       .halo {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         border-radius: 50%;
-        border: 4px solid var(--gold);
-        box-shadow: 0 0 40px var(--gold-glow1), 0 0 160px var(--gold-glow2);
+        border: 3px solid var(--gold);
+        box-shadow: 0 0 28px var(--gold-glow1), 0 0 120px var(--gold-glow2);
       }
+
+      /* halos iets kleiner */
       .h1 {
-        width: 60vmin;
-        height: 60vmin;
+        width: 52vmin;
+        height: 52vmin;
       }
       .h2 {
-        width: 72vmin;
-        height: 72vmin;
+        width: 64vmin;
+        height: 64vmin;
       }
       .h3 {
-        width: 85vmin;
-        height: 85vmin;
+        width: 76vmin;
+        height: 76vmin;
       }
+
       .text {
         position: fixed;
-        bottom: 10%;
+        bottom: 11%;
         width: 100%;
         text-align: center;
-        font-size: 34px;
+        font-size: 28px;
         color: var(--gold);
         z-index: 3;
       }
+
       .hint {
         position: fixed;
         top: 12%;
         width: 100%;
         text-align: center;
-        font-size: 14px;
+        font-size: 13px;
         color: rgba(255, 255, 255, 0.6);
         z-index: -1;
       }
-      #blauw {
-        width: 50px;
-      }
+
       .start {
         position: fixed;
         inset: 0;
-
         background-color: blue;
         background-image: url("./blauw.png");
         background-position: center;
         background-size: cover;
         background-repeat: no-repeat;
-
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 10;
       }
-      /* .blauw {
-        z-index: 9;
-        position: fixed;
-        width: 101%;
-        height: 101%;
-      } */
 
       .start button {
-        padding: 18px 42px;
+        padding: 16px 38px;
         border-radius: 40px;
         border: 1px solid rgba(255, 255, 255, 0.7);
         background: rgba(0, 0, 0, 0.25);
         color: white;
-        font-size: 16px;
+        font-size: 15px;
       }
     </style>
   </head>
+
   <body>
     <video id="camera" autoplay muted playsinline></video>
+
     <div class="target"></div>
+
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
         <div class="halo h3"></div>
@@ -162,6 +169,7 @@
     <div class="start" id="startScreen">
       <button id="startBtn">START</button>
     </div>
+
     <script>
       const camera = document.getElementById("camera");
       const startScreen = document.getElementById("startScreen");
@@ -171,26 +179,30 @@
 
       /* BOX BREATHING */
       const phases = [
-        { label: "Inademen", scale: 1.08 },
-        { label: "Vasthouden", scale: 1.08 },
-        { label: "Uitademen", scale: 0.92 },
-        { label: "Vasthouden", scale: 0.92 },
+        { label: "Inademen", scale: 1.06 },
+        { label: "Vasthouden", scale: 1.06 },
+        { label: "Uitademen", scale: 0.95 },
+        { label: "Vasthouden", scale: 0.95 },
       ];
-      let phaseIndex = 0,
-        offsetY = 0;
+
+      let phaseIndex = 0;
+      let offsetY = 0;
+
       function updateBreath() {
         const p = phases[phaseIndex];
         text.textContent = p.label;
         haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${p.scale})`;
         phaseIndex = (phaseIndex + 1) % phases.length;
       }
+
       setInterval(updateBreath, 4000);
       updateBreath();
 
-      /* TILT / COLOR TOGGLE */
-      let baseBeta = null,
-        armed = true,
-        colorState = "gold";
+      /* TILT / COLOR */
+      let baseBeta = null;
+      let armed = true;
+      let colorState = "gold";
+
       function toggleColor() {
         if (colorState === "gold") {
           document.documentElement.style.setProperty("--gold", "var(--blue)");
@@ -221,17 +233,21 @@
           colorState = "gold";
         }
       }
+
       function handleOrientation(e) {
         if (baseBeta === null) {
           baseBeta = e.beta;
           return;
         }
+
         const d = baseBeta - e.beta;
-        offsetY += d * 0.5;
-        offsetY = Math.max(-220, Math.min(0, offsetY));
+        offsetY += d * 0.45;
+        offsetY = Math.max(-200, Math.min(0, offsetY));
+
         haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${
           phases[(phaseIndex - 1 + 4) % 4].scale
         })`;
+
         if (d > 1 && armed) {
           armed = false;
           toggleColor();
@@ -239,17 +255,20 @@
         if (d < -1) armed = true;
       }
 
-      /* START BUTTON */
+      /* START */
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
           startScreen.style.display = "none";
+
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" },
             audio: false,
           });
+
           camera.srcObject = stream;
           camera.style.display = "block";
+
           if (typeof DeviceOrientationEvent?.requestPermission === "function") {
             const p = await DeviceOrientationEvent.requestPermission();
             if (p === "granted") {
