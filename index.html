@@ -11,10 +11,11 @@
     <style>
       :root {
         --gold: #fafbfa; /* startkleur halo */
-        --gold-glow1: rgba(250, 251, 250, 0.8);
-        --gold-glow2: rgba(250, 251, 250, 0.7);
+        /* grijzige glow */
+        --gold-glow1: rgba(240, 240, 240, 0.6);
+        --gold-glow2: rgba(220, 220, 220, 0.4);
 
-        --blue: #61988c; /* nieuwe groenige kleur */
+        --blue: #61988c; /* groenige kantelkleur */
         --blue-glow1: rgba(97, 152, 140, 0.7);
         --blue-glow2: rgba(97, 152, 140, 0.5);
       }
@@ -209,7 +210,6 @@
       function updateBreath() {
         const p = phases[phaseIndex];
         text.textContent = p.label;
-        // Alleen scale, geen verticale offset
         haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
         phaseIndex = (phaseIndex + 1) % phases.length;
       }
@@ -240,23 +240,23 @@
 
           indicatorText.textContent =
             "Kantel je telefoon naar boven om hem #fafbfa te maken";
-          indicatorBullet.style.backgroundColor = "#fafbfa"; // startkleur
+          indicatorBullet.style.backgroundColor = "#fafbfa";
           indicatorText.style.color = "#fafbfa";
         } else {
           document.documentElement.style.setProperty("--gold", "#fafbfa");
           document.documentElement.style.setProperty(
             "--gold-glow1",
-            "rgba(250,251,250,0.8)"
+            "rgba(240,240,240,0.6)"
           );
           document.documentElement.style.setProperty(
             "--gold-glow2",
-            "rgba(250,251,250,0.7)"
+            "rgba(220,220,220,0.4)"
           );
           colorState = "gold";
 
           indicatorText.textContent =
             "Kantel je telefoon naar boven om hem #61988c te maken";
-          indicatorBullet.style.backgroundColor = "#61988c"; // groenige kleur
+          indicatorBullet.style.backgroundColor = "#61988c";
           indicatorText.style.color = "#61988c";
         }
       }
