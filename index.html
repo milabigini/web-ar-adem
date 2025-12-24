@@ -117,8 +117,8 @@
         position: fixed;
         inset: 0;
 
-        background-color: pink;
-        background-image: url("./blauw.png");
+        /* background-color: blue; /* fallback */
+        /* background-image: url("./blauw.png"); */
         background-position: center;
         background-size: cover;
         background-repeat: no-repeat;
@@ -127,6 +127,12 @@
         justify-content: center;
         align-items: center;
         z-index: 10;
+      }
+      .blauw {
+        z-index: 9;
+        position: fixed;
+        width: 101%;
+        height: 101%;
       }
 
       .start button {
@@ -149,8 +155,11 @@
         <div class="halo h1"></div>
       </div>
     </div>
+
     <div class="hint" id="hint">Kantel mini omhoog om kleur te wisselen</div>
     <div class="text" id="text">Inademen</div>
+    <img class="blauw" src="./blauw.png" alt="" />
+
     <div class="start" id="startScreen">
       <button id="startBtn">START</button>
     </div>
