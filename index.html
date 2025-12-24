@@ -10,13 +10,13 @@
 
     <style>
       :root {
-        --gold: rgba(255, 220, 160, 0.95);
-        --gold-glow1: rgba(255, 220, 160, 0.8);
-        --gold-glow2: rgba(255, 220, 160, 0.7);
+        --gold: #fafbfa; /* startkleur halo */
+        --gold-glow1: rgba(250, 251, 250, 0.8);
+        --gold-glow2: rgba(250, 251, 250, 0.7);
 
-        --blue: rgba(120, 190, 255, 1);
-        --blue-glow1: rgba(120, 190, 255, 0.9);
-        --blue-glow2: rgba(120, 190, 255, 0.85);
+        --blue: #61988c; /* nieuwe groenige kleur */
+        --blue-glow1: rgba(97, 152, 140, 0.7);
+        --blue-glow2: rgba(97, 152, 140, 0.5);
       }
 
       html,
@@ -146,7 +146,7 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background-color: blue;
+        background-color: #61988c;
         transition: background-color 0.3s ease;
       }
 
@@ -166,7 +166,7 @@
     <div class="tilt-indicator" id="tiltIndicator">
       <div class="indicator-bullet" id="indicatorBullet"></div>
       <div class="indicator-text" id="indicatorText">
-        Kantel je telefoon naar boven om hem blauw te maken
+        Kantel je telefoon naar boven om hem #61988c te maken
       </div>
     </div>
 
@@ -239,28 +239,25 @@
           colorState = "blue";
 
           indicatorText.textContent =
-            "Kantel je telefoon naar boven om hem goud te maken";
-          indicatorBullet.style.backgroundColor = "rgba(255,220,160,0.95)"; // goud
-          indicatorText.style.color = "rgba(255,220,160,0.95)";
+            "Kantel je telefoon naar boven om hem #fafbfa te maken";
+          indicatorBullet.style.backgroundColor = "#fafbfa"; // startkleur
+          indicatorText.style.color = "#fafbfa";
         } else {
-          document.documentElement.style.setProperty(
-            "--gold",
-            "rgba(255,220,160,0.95)"
-          );
+          document.documentElement.style.setProperty("--gold", "#fafbfa");
           document.documentElement.style.setProperty(
             "--gold-glow1",
-            "rgba(255,220,160,0.8)"
+            "rgba(250,251,250,0.8)"
           );
           document.documentElement.style.setProperty(
             "--gold-glow2",
-            "rgba(255,220,160,0.7)"
+            "rgba(250,251,250,0.7)"
           );
           colorState = "gold";
 
           indicatorText.textContent =
-            "Kantel je telefoon naar boven om hem blauw te maken";
-          indicatorBullet.style.backgroundColor = "rgba(120,190,255,1)"; // blauw
-          indicatorText.style.color = "rgba(120,190,255,1)";
+            "Kantel je telefoon naar boven om hem #61988c te maken";
+          indicatorBullet.style.backgroundColor = "#61988c"; // groenige kleur
+          indicatorText.style.color = "#61988c";
         }
       }
 
