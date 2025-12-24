@@ -204,13 +204,13 @@
       ];
 
       let phaseIndex = 0;
-      let offsetY = 0;
       let breathingTimer = null;
 
       function updateBreath() {
         const p = phases[phaseIndex];
         text.textContent = p.label;
-        haloMover.style.transform = `translate(-50%, calc(-50% + ${offsetY}px)) scale(${p.scale})`;
+        // Alleen scale, geen verticale offset
+        haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
         phaseIndex = (phaseIndex + 1) % phases.length;
       }
 
@@ -271,9 +271,6 @@
         }
 
         const delta = baseBeta - e.beta;
-
-        offsetY += delta * 0.45;
-        offsetY = Math.max(-200, Math.min(0, offsetY));
 
         if (delta > 1 && armed) {
           armed = false;
