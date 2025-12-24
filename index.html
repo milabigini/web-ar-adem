@@ -10,10 +10,9 @@
 
     <style>
       :root {
-        --gold: #fafbfa; /* startkleur halo */
-        /* witte glow zonder grijzig effect */
-        --gold-glow1: rgba(250, 251, 250, 0.7);
-        --gold-glow2: rgba(250, 251, 250, 0.4);
+        --gold: #fefefe; /* witte halo */
+        --gold-glow1: rgba(250, 251, 250, 0.9);
+        --gold-glow2: rgba(250, 251, 250, 0.6);
 
         --blue: #61988c; /* groenige kantelkleur */
         --blue-glow1: rgba(97, 152, 140, 0.7);
@@ -63,7 +62,8 @@
         transform: translate(-50%, -50%);
         border-radius: 50%;
         border: 3px solid var(--gold);
-        box-shadow: 0 0 30px var(--gold-glow1), 0 0 120px var(--gold-glow2);
+        box-shadow: 0 0 40px var(--gold-glow1), 0 0 140px var(--gold-glow2);
+        filter: blur(0.5px);
       }
 
       .h1 {
@@ -163,7 +163,6 @@
   <body>
     <video id="camera" autoplay muted playsinline></video>
 
-    <!-- TILT INDICATOR -->
     <div class="tilt-indicator" id="tiltIndicator">
       <div class="indicator-bullet" id="indicatorBullet"></div>
       <div class="indicator-text" id="indicatorText">
@@ -246,11 +245,11 @@
           document.documentElement.style.setProperty("--gold", "#fafbfa");
           document.documentElement.style.setProperty(
             "--gold-glow1",
-            "rgba(250,251,250,0.7)"
+            "rgba(250,251,250,0.9)"
           );
           document.documentElement.style.setProperty(
             "--gold-glow2",
-            "rgba(250,251,250,0.4)"
+            "rgba(250,251,250,0.6)"
           );
           colorState = "gold";
 
@@ -266,9 +265,7 @@
           baseBeta = e.beta;
           return;
         }
-
         const delta = baseBeta - e.beta;
-
         if (delta > 1 && armed) {
           armed = false;
           toggleColor();
@@ -282,21 +279,37 @@
         .addEventListener("click", async () => {
           startScreen.style.display = "none";
 
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-            audio: false,
-          });
-          camera.srcObject = stream;
-          camera.style.display = "block";
+          /* CAMERA */
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: "environment" },
+              audio: false,
+            });
+            camera.srcObject = stream;
+            camera.style.display = "block";
+          } catch (e) {
+            console.error("Camera error:", e);
+            alert("Camera toegang geweigerd of niet beschikbaar.");
+          }
 
+          /* DEVICE ORIENTATION PERMISSION (iOS) */
           if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-            const p = await DeviceOrientationEvent.requestPermission();
-            if (p === "granted")
-              window.addEventListener("deviceorientation", handleOrientation);
+            try {
+              const response = await DeviceOrientationEvent.requestPermission();
+              if (response === "granted") {
+                window.addEventListener("deviceorientation", handleOrientation);
+              } else {
+                console.warn("DeviceOrientation toegang geweigerd");
+              }
+            } catch (err) {
+              console.error("DeviceOrientation permission error:", err);
+            }
           } else {
+            // Android & desktop
             window.addEventListener("deviceorientation", handleOrientation);
           }
 
+          /* COUNTDOWN */
           let count = 3;
           countdown.textContent = count;
           countdown.style.opacity = 1;
