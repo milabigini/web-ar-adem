@@ -118,10 +118,12 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        z-index: 10;
-        padding: 0 20px;
+        justify-content: flex-start; /* houdt titel en tekst boven */
+        padding-top: 80px; /* hoger voor titel en tekst */
+        padding-left: 20px;
+        padding-right: 20px;
         text-align: center;
+        z-index: 10;
         color: white;
       }
 
@@ -129,12 +131,13 @@
         font-size: 28px;
         font-weight: 200;
         margin-bottom: 12px;
+        text-transform: uppercase;
       }
 
       .start p {
         font-size: 16px;
         font-weight: 100;
-        margin-bottom: 30px;
+        margin-bottom: 50px; /* extra ruimte onder uitleg */
         line-height: 1.5em;
       }
 
@@ -148,6 +151,7 @@
         font-weight: 100;
         letter-spacing: 0.05em;
         cursor: pointer;
+        margin-top: 15px;
       }
 
       /* TILT INDICATOR */
@@ -206,7 +210,7 @@
     <div class="text" id="text">INHALE</div>
 
     <div class="start" id="startScreen">
-      <h1>Start Your Breathing Exercise</h1>
+      <h1>START YOUR BREATHING EXERCISE</h1>
       <p>
         This exercise helps you focus and relax. We’ll use your camera to track
         your device orientation so you can interact with the halo as you
