@@ -152,8 +152,8 @@
       }
 
       .indicator-bullet {
-        width: 20px;
-        height: 20px;
+        width: 20px; /* originele grootte */
+        height: 20px; /* originele grootte */
         border-radius: 50%;
         background-color: #61988c;
         transition: background-color 0.3s ease;
@@ -205,12 +205,12 @@
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
-      /* BOX BREATHING WITH SCALE */
+      /* BOX BREATHING WITH STRONGER EXHALE */
       const phases = [
         { label: "INHALE", scale: 1.12 },
         { label: "HOLD", scale: 1.12 },
-        { label: "EXHALE", scale: 0.88 },
-        { label: "HOLD", scale: 0.88 },
+        { label: "EXHALE", scale: 0.75 },
+        { label: "HOLD", scale: 0.75 },
       ];
 
       let phaseIndex = 0;
