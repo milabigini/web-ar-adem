@@ -26,7 +26,6 @@
         height: 100%;
         overflow: hidden;
         background: black;
-
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-weight: 100;
         letter-spacing: 0.05em;
@@ -42,7 +41,6 @@
         z-index: 0;
       }
 
-      /* HALO */
       .overlay {
         position: fixed;
         inset: 0;
@@ -82,7 +80,6 @@
         height: 76vmin;
       }
 
-      /* TEXT */
       .text {
         position: fixed;
         bottom: 11%;
@@ -97,7 +94,6 @@
         z-index: 3;
       }
 
-      /* COUNTDOWN */
       .countdown {
         position: fixed;
         inset: 0;
@@ -113,7 +109,6 @@
         transition: opacity 0.4s ease;
       }
 
-      /* START SCREEN */
       .start {
         position: fixed;
         inset: 0;
@@ -137,7 +132,6 @@
         letter-spacing: 0.05em;
       }
 
-      /* TILT INDICATOR */
       .tilt-indicator {
         position: fixed;
         top: 5%;
@@ -152,8 +146,8 @@
       }
 
       .indicator-bullet {
-        width: 20px; /* originele grootte */
-        height: 20px; /* originele grootte */
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         background-color: #61988c;
         transition: background-color 0.3s ease;
@@ -205,12 +199,11 @@
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
-      /* BOX BREATHING WITH STRONGER EXHALE */
       const phases = [
         { label: "INHALE", scale: 1.12 },
         { label: "HOLD", scale: 1.12 },
-        { label: "EXHALE", scale: 0.75 },
-        { label: "HOLD", scale: 0.75 },
+        { label: "EXHALE", scale: 0.7 }, // iets kleiner bij exhale
+        { label: "HOLD", scale: 0.7 },
       ];
 
       let phaseIndex = 0;
@@ -227,7 +220,6 @@
         setInterval(updateBreath, 4000);
       }
 
-      /* TILT / COLOR */
       let baseBeta = null;
       let armed = true;
       let colorState = "gold";
@@ -279,7 +271,6 @@
         if (delta < -1) armed = true;
       }
 
-      /* START BUTTON */
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
