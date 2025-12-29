@@ -53,7 +53,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0.94);
-        transition: transform 2s ease-in-out;
+        transition: transform 4s ease-in-out; /* 4 seconden per animatie */
       }
 
       .halo {
@@ -118,8 +118,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-start; /* houdt titel en tekst boven */
-        padding-top: 80px; /* hoger voor titel en tekst */
+        justify-content: flex-start;
+        padding-top: 80px;
         padding-left: 20px;
         padding-right: 20px;
         text-align: center;
@@ -137,7 +137,7 @@
       .start p {
         font-size: 16px;
         font-weight: 100;
-        margin-bottom: 50px; /* extra ruimte onder uitleg */
+        margin-bottom: 50px;
         line-height: 1.5em;
       }
 
@@ -151,7 +151,7 @@
         font-weight: 100;
         letter-spacing: 0.05em;
         cursor: pointer;
-        margin-top: 15px;
+        margin-top: auto;
       }
 
       /* TILT INDICATOR */
@@ -228,6 +228,7 @@
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
+      /* BOX BREATHING */
       const phases = [
         { label: "INHALE", scale: 1.12 },
         { label: "HOLD", scale: 1.12 },
@@ -246,9 +247,10 @@
       function startBreathing() {
         text.style.opacity = 1;
         updateBreath();
-        setInterval(updateBreath, 4000);
+        setInterval(updateBreath, 4000); // 4 seconden per fase
       }
 
+      /* TILT / COLOR */
       let baseBeta = null;
       let armed = true;
       let colorState = "gold";
