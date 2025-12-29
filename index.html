@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -10,11 +10,11 @@
 
     <style>
       :root {
-        --gold: #fefefe; /* witte halo */
+        --gold: #fefefe;
         --gold-glow1: rgba(250, 251, 250, 0.9);
         --gold-glow2: #fefefe;
 
-        --blue: #61988c; /* groenige kantelkleur */
+        --blue: #61988c;
         --blue-glow1: rgba(97, 152, 140, 0.7);
         --blue-glow2: rgba(97, 152, 140, 0.5);
       }
@@ -26,7 +26,10 @@
         height: 100%;
         overflow: hidden;
         background: black;
+
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 100; /* THIN */
+        letter-spacing: 0.05em;
       }
 
       video {
@@ -79,13 +82,15 @@
         height: 76vmin;
       }
 
-      /* TEKST */
+      /* TEXT */
       .text {
         position: fixed;
         bottom: 11%;
         width: 100%;
         text-align: center;
         font-size: 28px;
+        font-weight: 100;
+        letter-spacing: 0.06em;
         color: var(--gold);
         opacity: 0;
         transition: opacity 1s ease;
@@ -100,14 +105,15 @@
         align-items: center;
         justify-content: center;
         font-size: 110px;
-        font-weight: 300;
+        font-weight: 100;
+        letter-spacing: 0.08em;
         color: white;
         z-index: 5;
         opacity: 0;
         transition: opacity 0.4s ease;
       }
 
-      /* START */
+      /* START SCREEN */
       .start {
         position: fixed;
         inset: 0;
@@ -123,10 +129,12 @@
       .start button {
         padding: 16px 40px;
         border-radius: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.7);
-        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255);
+        background: rgb(255 255 255 / 30%);
         color: #5e8f83;
         font-size: 16px;
+        font-weight: 100;
+        letter-spacing: 0.05em;
       }
 
       /* TILT INDICATOR */
@@ -152,11 +160,13 @@
       }
 
       .indicator-text {
-        font-size: 18px;
+        font-size: 16px;
+        font-weight: 100;
+        letter-spacing: 0.04em;
         color: white;
         text-shadow: 0 0 6px black;
         transition: color 0.3s ease;
-        width: 240px;
+        width: 260px;
       }
     </style>
   </head>
@@ -167,7 +177,7 @@
     <div class="tilt-indicator" id="tiltIndicator">
       <div class="indicator-bullet" id="indicatorBullet"></div>
       <div class="indicator-text" id="indicatorText">
-        Kantel je telefoon naar boven om hem groen te maken
+        Tilt your phone up to switch the halo color!
       </div>
     </div>
 
@@ -180,7 +190,7 @@
     </div>
 
     <div class="countdown" id="countdown">3</div>
-    <div class="text" id="text">Inademen</div>
+    <div class="text" id="text">INHALE</div>
 
     <div class="start" id="startScreen">
       <button id="startBtn">START</button>
@@ -192,21 +202,18 @@
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
-
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
       /* BOX BREATHING */
       const phases = [
-        { label: "Inademen", scale: 1.06 },
-        { label: "Vasthouden", scale: 1.06 },
-        { label: "Uitademen", scale: 0.94 },
-        { label: "Vasthouden", scale: 0.94 },
+        { label: "INHALE", scale: 1.06 },
+        { label: "HOLD", scale: 1.06 },
+        { label: "EXHALE", scale: 0.94 },
+        { label: "HOLD", scale: 0.94 },
       ];
 
       let phaseIndex = 0;
-      let breathingTimer = null;
-
       function updateBreath() {
         const p = phases[phaseIndex];
         text.textContent = p.label;
@@ -217,10 +224,10 @@
       function startBreathing() {
         text.style.opacity = 1;
         updateBreath();
-        breathingTimer = setInterval(updateBreath, 4000);
+        setInterval(updateBreath, 4000);
       }
 
-      /* TILT / KLEUR */
+      /* TILT / COLOR */
       let baseBeta = null;
       let armed = true;
       let colorState = "gold";
@@ -238,12 +245,11 @@
           );
           colorState = "blue";
 
-          indicatorText.textContent =
-            "Kantel je telefoon naar boven om hem wit te maken";
-          indicatorBullet.style.backgroundColor = "#fafbfa";
-          indicatorText.style.color = "#fafbfa";
+          indicatorText.textContent = "Tilt your phone up to switch to white!";
+          indicatorBullet.style.backgroundColor = "#fefefe";
+          indicatorText.style.color = "#fefefe";
         } else {
-          document.documentElement.style.setProperty("--gold", "#fafbfa");
+          document.documentElement.style.setProperty("--gold", "#fefefe");
           document.documentElement.style.setProperty(
             "--gold-glow1",
             "rgba(250,251,250,0.9)"
@@ -254,8 +260,7 @@
           );
           colorState = "gold";
 
-          indicatorText.textContent =
-            "Kantel je telefoon naar boven om hem groen te maken";
+          indicatorText.textContent = "Tilt your phone up to switch to green!";
           indicatorBullet.style.backgroundColor = "#61988c";
           indicatorText.style.color = "#61988c";
         }
@@ -274,13 +279,12 @@
         if (delta < -1) armed = true;
       }
 
-      /* START */
+      /* START BUTTON */
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
           startScreen.style.display = "none";
 
-          /* CAMERA */
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
               video: { facingMode: "environment" },
@@ -290,27 +294,22 @@
             camera.style.display = "block";
           } catch (e) {
             console.error("Camera error:", e);
-            alert("Camera toegang geweigerd of niet beschikbaar.");
+            alert("Camera access denied or unavailable.");
           }
 
-          /* DEVICE ORIENTATION PERMISSION (iOS) */
           if (typeof DeviceOrientationEvent?.requestPermission === "function") {
             try {
               const response = await DeviceOrientationEvent.requestPermission();
               if (response === "granted") {
                 window.addEventListener("deviceorientation", handleOrientation);
-              } else {
-                console.warn("DeviceOrientation toegang geweigerd");
               }
             } catch (err) {
               console.error("DeviceOrientation permission error:", err);
             }
           } else {
-            // Android & desktop
             window.addEventListener("deviceorientation", handleOrientation);
           }
 
-          /* COUNTDOWN */
           let count = 3;
           countdown.textContent = count;
           countdown.style.opacity = 1;
