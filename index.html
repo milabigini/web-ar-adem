@@ -116,9 +116,26 @@
         background-size: cover;
         background-position: center;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 10;
+        padding: 0 20px;
+        text-align: center;
+        color: white;
+      }
+
+      .start h1 {
+        font-size: 28px;
+        font-weight: 200;
+        margin-bottom: 12px;
+      }
+
+      .start p {
+        font-size: 16px;
+        font-weight: 100;
+        margin-bottom: 30px;
+        line-height: 1.5em;
       }
 
       .start button {
@@ -130,8 +147,10 @@
         font-size: 16px;
         font-weight: 100;
         letter-spacing: 0.05em;
+        cursor: pointer;
       }
 
+      /* TILT INDICATOR */
       .tilt-indicator {
         position: fixed;
         top: 5%;
@@ -187,7 +206,13 @@
     <div class="text" id="text">INHALE</div>
 
     <div class="start" id="startScreen">
-      <button id="startBtn">START</button>
+      <h1>Start Your Breathing Exercise</h1>
+      <p>
+        This exercise helps you focus and relax. We’ll use your camera to track
+        your device orientation so you can interact with the halo as you
+        breathe.
+      </p>
+      <button id="startBtn">BEGIN</button>
     </div>
 
     <script>
@@ -202,7 +227,7 @@
       const phases = [
         { label: "INHALE", scale: 1.12 },
         { label: "HOLD", scale: 1.12 },
-        { label: "EXHALE", scale: 0.7 }, // iets kleiner bij exhale
+        { label: "EXHALE", scale: 0.7 },
         { label: "HOLD", scale: 0.7 },
       ];
 
