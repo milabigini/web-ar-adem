@@ -28,7 +28,7 @@
         background: black;
 
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-weight: 100; /* THIN */
+        font-weight: 100;
         letter-spacing: 0.05em;
       }
 
@@ -55,7 +55,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0.94);
-        transition: transform 4s ease-in-out;
+        transition: transform 2s ease-in-out;
       }
 
       .halo {
@@ -105,7 +105,7 @@
         align-items: center;
         justify-content: center;
         font-size: 110px;
-        font-weight: 100;
+        font-weight: 200;
         letter-spacing: 0.08em;
         color: white;
         z-index: 5;
@@ -205,12 +205,12 @@
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
-      /* BOX BREATHING */
+      /* BOX BREATHING WITH SCALE */
       const phases = [
-        { label: "INHALE", scale: 1.06 },
-        { label: "HOLD", scale: 1.06 },
-        { label: "EXHALE", scale: 0.94 },
-        { label: "HOLD", scale: 0.94 },
+        { label: "INHALE", scale: 1.12 },
+        { label: "HOLD", scale: 1.12 },
+        { label: "EXHALE", scale: 0.88 },
+        { label: "HOLD", scale: 0.88 },
       ];
 
       let phaseIndex = 0;
