@@ -24,8 +24,8 @@
         margin: 0;
         width: 100%;
         height: 100%;
-        overflow: hidden;
         background: black;
+        overflow: hidden;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-weight: 100;
         letter-spacing: 0.05em;
@@ -41,6 +41,7 @@
         z-index: 0;
       }
 
+      /* HALO */
       .overlay {
         position: fixed;
         inset: 0;
@@ -53,7 +54,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0.94);
-        transition: transform 4s ease-in-out; /* 4 seconden per animatie */
+        transition: transform 4s ease-in-out;
       }
 
       .halo {
@@ -80,20 +81,20 @@
         height: 76vmin;
       }
 
+      /* BREATH TEXT */
       .text {
         position: fixed;
         bottom: 11%;
         width: 100%;
         text-align: center;
         font-size: 28px;
-        font-weight: 100;
-        letter-spacing: 0.06em;
         color: var(--gold);
         opacity: 0;
         transition: opacity 1s ease;
         z-index: 3;
       }
 
+      /* COUNTDOWN */
       .countdown {
         position: fixed;
         inset: 0;
@@ -101,27 +102,20 @@
         align-items: center;
         justify-content: center;
         font-size: 110px;
-        font-weight: 200;
-        letter-spacing: 0.08em;
         color: white;
-        z-index: 5;
         opacity: 0;
-        transition: opacity 0.4s ease;
+        z-index: 5;
       }
 
+      /* START */
       .start {
         position: fixed;
         inset: 0;
-        background-image: url("./blauw.png");
-        background-size: cover;
-        background-position: center;
+        background: url("./blauw.png") center / cover;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-start;
         padding-top: 80px;
-        padding-left: 20px;
-        padding-right: 20px;
         text-align: center;
         z-index: 10;
         color: white;
@@ -129,29 +123,23 @@
 
       .start h1 {
         font-size: 28px;
-        font-weight: 200;
-        margin-bottom: 12px;
         text-transform: uppercase;
       }
 
       .start p {
         font-size: 16px;
-        font-weight: 100;
-        margin-bottom: 50px;
+        max-width: 320px;
         line-height: 1.5em;
+        margin-bottom: 40px;
       }
 
       .start button {
         padding: 16px 40px;
         border-radius: 40px;
-        border: 1px solid rgba(255, 255, 255);
-        background: rgb(255 255 255 / 30%);
+        border: 1px solid white;
+        background: rgba(255, 255, 255, 0.3);
         color: #5e8f83;
         font-size: 16px;
-        font-weight: 100;
-        letter-spacing: 0.05em;
-        cursor: pointer;
-        margin-top: 15px;
       }
 
       /* TILT INDICATOR */
@@ -159,31 +147,25 @@
         position: fixed;
         top: 5%;
         width: 100%;
-        text-align: center;
-        z-index: 4;
-        pointer-events: none;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 8px;
+        z-index: 4;
       }
 
       .indicator-bullet {
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background-color: #61988c;
-        transition: background-color 0.3s ease;
+        background: #61988c;
       }
 
       .indicator-text {
         font-size: 16px;
-        font-weight: 100;
-        letter-spacing: 0.04em;
         color: white;
-        text-shadow: 0 0 6px black;
-        transition: color 0.3s ease;
         width: 260px;
+        text-align: center;
       }
     </style>
   </head>
@@ -191,7 +173,7 @@
   <body>
     <video id="camera" autoplay muted playsinline></video>
 
-    <div class="tilt-indicator" id="tiltIndicator">
+    <div class="tilt-indicator">
       <div class="indicator-bullet" id="indicatorBullet"></div>
       <div class="indicator-text" id="indicatorText">
         Tilt your phone to play with the halo colors!
@@ -212,23 +194,19 @@
     <div class="start" id="startScreen">
       <h1>START YOUR BREATHING EXERCISE</h1>
       <p>
-        This exercise helps you focus and relax. We’ll use your camera to track
-        your device orientation so you can interact with the halo as you
-        breathe.
+        This exercise helps you relax. Your camera stays local. Tilting your
+        phone lets you switch halo colors.
       </p>
-      <button id="startBtn">BEGIN</button>
+      <button id="startBtn">START</button>
     </div>
 
     <script>
-      const camera = document.getElementById("camera");
-      const startScreen = document.getElementById("startScreen");
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
-      /* BOX BREATHING */
       const phases = [
         { label: "INHALE", scale: 1.12 },
         { label: "HOLD", scale: 1.12 },
@@ -237,26 +215,21 @@
       ];
 
       let phaseIndex = 0;
-      function updateBreath() {
+      setInterval(() => {
         const p = phases[phaseIndex];
         text.textContent = p.label;
         haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
-        phaseIndex = (phaseIndex + 1) % phases.length;
-      }
-
-      function startBreathing() {
         text.style.opacity = 1;
-        updateBreath();
-        setInterval(updateBreath, 4000); // 4 seconden per fase
-      }
+        phaseIndex = (phaseIndex + 1) % phases.length;
+      }, 4000);
 
-      /* TILT / COLOR */
-      let baseBeta = null;
-      let armed = true;
-      let colorState = "gold";
+      /* === iOS SAFE TILT === */
+      let startBeta = null;
+      let canToggle = true;
+      let color = "white";
 
       function toggleColor() {
-        if (colorState === "gold") {
+        if (color === "white") {
           document.documentElement.style.setProperty("--gold", "var(--blue)");
           document.documentElement.style.setProperty(
             "--gold-glow1",
@@ -266,84 +239,63 @@
             "--gold-glow2",
             "var(--blue-glow2)"
           );
-          colorState = "blue";
-
-          indicatorText.textContent = "Tilt your phone up to switch to white!";
-          indicatorBullet.style.backgroundColor = "#fefefe";
-          indicatorText.style.color = "#fefefe";
+          indicatorText.textContent = "Tilt again to switch back to white";
+          indicatorBullet.style.background = "#fefefe";
+          color = "green";
         } else {
           document.documentElement.style.setProperty("--gold", "#fefefe");
           document.documentElement.style.setProperty(
             "--gold-glow1",
             "rgba(250,251,250,0.9)"
           );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "rgba(250,251,250,0.6)"
-          );
-          colorState = "gold";
-
-          indicatorText.textContent = "Tilt your phone up to switch to green!";
-          indicatorBullet.style.backgroundColor = "#61988c";
-          indicatorText.style.color = "#61988c";
+          document.documentElement.style.setProperty("--gold-glow2", "#fefefe");
+          indicatorText.textContent =
+            "Tilt your phone to play with the halo colors!";
+          indicatorBullet.style.background = "#61988c";
+          color = "white";
         }
       }
 
       function handleOrientation(e) {
-        if (baseBeta === null) {
-          baseBeta = e.beta;
+        if (startBeta === null) {
+          startBeta = e.beta;
           return;
         }
-        const delta = baseBeta - e.beta;
-        if (delta > 1 && armed) {
-          armed = false;
+
+        const diff = e.beta - startBeta;
+
+        if (Math.abs(diff) > 15 && canToggle) {
           toggleColor();
+          canToggle = false;
         }
-        if (delta < -1) armed = true;
+
+        if (Math.abs(diff) < 5) {
+          canToggle = true;
+        }
       }
 
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
-          startScreen.style.display = "none";
+          document.getElementById("startScreen").style.display = "none";
 
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-              video: { facingMode: "environment" },
-              audio: false,
-            });
-            camera.srcObject = stream;
-            camera.style.display = "block";
-          } catch (e) {
-            console.error("Camera error:", e);
-            alert("Camera access denied or unavailable.");
-          }
-
-          if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-            try {
-              const response = await DeviceOrientationEvent.requestPermission();
-              if (response === "granted") {
-                window.addEventListener("deviceorientation", handleOrientation);
-              }
-            } catch (err) {
-              console.error("DeviceOrientation permission error:", err);
+          if (typeof DeviceOrientationEvent.requestPermission === "function") {
+            const permission = await DeviceOrientationEvent.requestPermission();
+            if (permission === "granted") {
+              window.addEventListener("deviceorientation", handleOrientation);
             }
           } else {
             window.addEventListener("deviceorientation", handleOrientation);
           }
 
-          let count = 3;
-          countdown.textContent = count;
+          let c = 3;
           countdown.style.opacity = 1;
-
-          const timer = setInterval(() => {
-            count--;
-            if (count === 0) {
-              clearInterval(timer);
+          const t = setInterval(() => {
+            c--;
+            countdown.textContent = c;
+            if (c === 0) {
+              clearInterval(t);
               countdown.style.opacity = 0;
-              setTimeout(startBreathing, 400);
-            } else {
-              countdown.textContent = count;
             }
           }, 1000);
         });
