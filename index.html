@@ -31,6 +31,16 @@
         letter-spacing: 0.05em;
       }
 
+      /* CAMERA */
+      video {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+      }
+
       /* HALO */
       .overlay {
         position: fixed;
@@ -156,15 +166,12 @@
         height: 20px;
         border-radius: 50%;
         background-color: #61988c;
-        transition: background-color 0.3s ease;
       }
 
       .indicator-text {
         font-size: 16px;
         color: white;
         width: 260px;
-        text-align: center;
-        transition: color 0.3s ease;
       }
 
       /* SOUND */
@@ -190,6 +197,8 @@
   </head>
 
   <body>
+    <video id="camera" autoplay muted playsinline></video>
+
     <audio id="bgAudio" src="muziek.mp3" loop></audio>
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
@@ -222,6 +231,7 @@
     </div>
 
     <script>
+      const camera = document.getElementById("camera");
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
@@ -253,7 +263,7 @@
         setInterval(applyPhase, 4000);
       }
 
-      /* TILT / COLOR */
+      /* TILT COLOR */
       let baseBeta = null;
       let armed = true;
       let colorState = "gold";
@@ -270,10 +280,6 @@
             "var(--blue-glow2)"
           );
           colorState = "blue";
-
-          indicatorText.textContent = "Tilt your phone to switch to white!";
-          indicatorBullet.style.backgroundColor = "#fefefe";
-          indicatorText.style.color = "#fefefe";
         } else {
           document.documentElement.style.setProperty("--gold", "#fefefe");
           document.documentElement.style.setProperty(
@@ -285,10 +291,6 @@
             "rgba(250,251,250,0.6)"
           );
           colorState = "gold";
-
-          indicatorText.textContent = "Tilt your phone to switch to green!";
-          indicatorBullet.style.backgroundColor = "#61988c";
-          indicatorText.style.color = "#61988c";
         }
       }
 
@@ -311,6 +313,18 @@
         .addEventListener("click", async () => {
           document.getElementById("startScreen").style.display = "none";
 
+          /* CAMERA */
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: "environment" },
+              audio: false,
+            });
+            camera.srcObject = stream;
+          } catch (e) {
+            console.error("Camera error", e);
+          }
+
+          /* ORIENTATION */
           if (typeof DeviceOrientationEvent?.requestPermission === "function") {
             const res = await DeviceOrientationEvent.requestPermission();
             if (res === "granted") {
@@ -319,9 +333,6 @@
           } else {
             window.addEventListener("deviceorientation", handleOrientation);
           }
-
-          audio.volume = 0.6;
-          audio.load();
 
           let count = 3;
           countdown.textContent = count;
@@ -333,11 +344,9 @@
               clearInterval(timer);
               countdown.style.opacity = 0;
 
-              try {
-                await audio.play();
-                soundBtn.style.opacity = 1;
-                soundBtn.style.pointerEvents = "auto";
-              } catch {}
+              await audio.play().catch(() => {});
+              soundBtn.style.opacity = 1;
+              soundBtn.style.pointerEvents = "auto";
 
               startBreathing();
             } else {
