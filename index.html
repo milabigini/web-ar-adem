@@ -31,6 +31,7 @@
         letter-spacing: 0.05em;
       }
 
+      /* CAMERA */
       video {
         position: fixed;
         inset: 0;
@@ -40,6 +41,7 @@
         z-index: 0;
       }
 
+      /* HALO */
       .overlay {
         position: fixed;
         inset: 0;
@@ -78,6 +80,7 @@
         height: 76vmin;
       }
 
+      /* TEXT */
       .text {
         position: fixed;
         bottom: 11%;
@@ -90,6 +93,7 @@
         z-index: 3;
       }
 
+      /* COUNTDOWN */
       .countdown {
         position: fixed;
         inset: 0;
@@ -97,12 +101,12 @@
         align-items: center;
         justify-content: center;
         font-size: 110px;
-        font-weight: 200;
         color: white;
-        opacity: 0;
         z-index: 5;
+        opacity: 0;
       }
 
+      /* START */
       .start {
         position: fixed;
         inset: 0;
@@ -118,7 +122,6 @@
 
       .start h1 {
         font-size: 28px;
-        font-weight: 200;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         margin-bottom: 12px;
@@ -128,51 +131,21 @@
         font-size: 16px;
         max-width: 320px;
         line-height: 1.5em;
-        margin-bottom: 48px;
+        margin-bottom: 50px;
       }
 
       .start button {
         padding: 16px 44px;
         border-radius: 40px;
         border: none;
-        background: #ffffff;
+        background: white;
         color: #5e8f83;
         font-size: 16px;
-        font-weight: 400;
+        letter-spacing: 0.05em;
         cursor: pointer;
       }
 
-      .start button:active {
-        transform: scale(0.97);
-      }
-
-      .tilt-indicator {
-        position: fixed;
-        top: 5%;
-        width: 100%;
-        text-align: center;
-        z-index: 4;
-        pointer-events: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .indicator-bullet {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background-color: #61988c;
-      }
-
-      .indicator-text {
-        font-size: 16px;
-        color: white;
-        width: 260px;
-        text-align: center;
-      }
-
+      /* SOUND */
       .sound-toggle {
         position: fixed;
         top: 18px;
@@ -180,7 +153,6 @@
         width: 42px;
         height: 42px;
         border-radius: 50%;
-        border: 1px solid rgba(255, 255, 255, 0.8);
         background: rgba(255, 255, 255, 0.25);
         color: white;
         display: flex;
@@ -196,16 +168,8 @@
 
   <body>
     <video id="camera" autoplay muted playsinline></video>
-    <audio id="bgAudio" src="muziek.mp3" loop></audio>
-
+    <audio id="audio" src="muziek.mp3" loop></audio>
     <div class="sound-toggle" id="soundBtn">🔊</div>
-
-    <div class="tilt-indicator" id="tiltUI">
-      <div class="indicator-bullet" id="indicatorBullet"></div>
-      <div class="indicator-text">
-        Tilt your phone to play with the halo colors!
-      </div>
-    </div>
 
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
@@ -220,50 +184,49 @@
 
     <div class="start" id="startScreen">
       <h1>START YOUR BREATHING EXERCISE</h1>
-      <p>
-        This exercise helps you focus and relax. Your camera creates an
-        immersive background, and gentle movement lets you interact with the
-        halo.
-      </p>
+      <p>Follow the rhythm of the halo and your breath.</p>
       <button id="startBtn">START</button>
     </div>
 
     <script>
       const camera = document.getElementById("camera");
-      const haloMover = document.getElementById("haloMover");
+      const halo = document.getElementById("haloMover");
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
-      const audio = document.getElementById("bgAudio");
+      const audio = document.getElementById("audio");
       const soundBtn = document.getElementById("soundBtn");
-      const tiltUI = document.getElementById("tiltUI");
 
+      /* BREATHING */
       const phases = [
         { label: "INHALE", scale: 1.12 },
         { label: "HOLD", scale: 1.12 },
         { label: "EXHALE", scale: 0.7 },
         { label: "HOLD", scale: 0.7 },
       ];
-
-      let phaseIndex = 0;
-      function applyPhase() {
-        const p = phases[phaseIndex];
-        text.textContent = p.label;
-        haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
-        phaseIndex = (phaseIndex + 1) % phases.length;
-      }
+      let phase = 0;
+      let breathTimer;
 
       function startBreathing() {
         text.style.opacity = 1;
-        applyPhase();
-        setInterval(applyPhase, 4000);
+        phase = 0;
+        updateBreath();
+        breathTimer = setInterval(updateBreath, 4000);
       }
 
+      function updateBreath() {
+        const p = phases[phase];
+        text.textContent = p.label;
+        halo.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
+        phase = (phase + 1) % phases.length;
+      }
+
+      /* COLOR TILT */
       let baseBeta = null;
       let armed = true;
-      let colorState = "gold";
+      let isGold = true;
 
       function toggleColor() {
-        if (colorState === "gold") {
+        if (isGold) {
           document.documentElement.style.setProperty("--gold", "var(--blue)");
           document.documentElement.style.setProperty(
             "--gold-glow1",
@@ -273,7 +236,6 @@
             "--gold-glow2",
             "var(--blue-glow2)"
           );
-          colorState = "blue";
         } else {
           document.documentElement.style.setProperty("--gold", "#fefefe");
           document.documentElement.style.setProperty(
@@ -284,12 +246,11 @@
             "--gold-glow2",
             "rgba(250,251,250,0.6)"
           );
-          colorState = "gold";
         }
+        isGold = !isGold;
       }
 
       function handleOrientation(e) {
-        if (e.beta == null) return;
         if (baseBeta === null) {
           baseBeta = e.beta;
           return;
@@ -302,49 +263,50 @@
         if (delta < -1) armed = true;
       }
 
+      /* START */
       document
         .getElementById("startBtn")
         .addEventListener("click", async () => {
           document.getElementById("startScreen").style.display = "none";
 
+          /* CAMERA */
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
               video: { facingMode: "environment" },
-              audio: false,
             });
             camera.srcObject = stream;
-            await camera.play();
-          } catch {
-            camera.style.display = "none";
-          }
+          } catch {}
 
-          let motionEnabled = false;
-
-          if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+          /* ORIENTATION (iOS SAFE) */
+          if (
+            typeof DeviceOrientationEvent !== "undefined" &&
+            typeof DeviceOrientationEvent.requestPermission === "function"
+          ) {
             const res = await DeviceOrientationEvent.requestPermission();
-            if (res === "granted") motionEnabled = true;
-          } else if ("DeviceOrientationEvent" in window) {
-            motionEnabled = true;
-          }
-
-          if (motionEnabled) {
-            window.addEventListener("deviceorientation", handleOrientation);
+            if (res === "granted") {
+              window.addEventListener("deviceorientation", handleOrientation);
+            }
           } else {
-            tiltUI.style.display = "none";
+            window.addEventListener("deviceorientation", handleOrientation);
           }
 
+          /* COUNTDOWN */
           let count = 3;
-          countdown.style.opacity = 1;
           countdown.textContent = count;
+          countdown.style.opacity = 1;
 
           const timer = setInterval(async () => {
             count--;
             if (count === 0) {
               clearInterval(timer);
               countdown.style.opacity = 0;
-              await audio.play().catch(() => {});
+
+              try {
+                await audio.play();
+              } catch {}
               soundBtn.style.opacity = 1;
               soundBtn.style.pointerEvents = "auto";
+
               startBreathing();
             } else {
               countdown.textContent = count;
@@ -352,6 +314,7 @@
           }, 1000);
         });
 
+      /* SOUND TOGGLE */
       soundBtn.addEventListener("click", () => {
         if (audio.paused) {
           audio.play();
