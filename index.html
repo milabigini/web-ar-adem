@@ -184,6 +184,7 @@
       const countdown = document.getElementById("countdown");
       const audio = document.getElementById("audio");
       const soundBtn = document.getElementById("soundBtn");
+      const camera = document.getElementById("camera");
 
       const phases = [
         { l: "INHALE", s: 1.12 },
@@ -191,7 +192,8 @@
         { l: "EXHALE", s: 0.7 },
         { l: "HOLD", s: 0.7 },
       ];
-      let i = 0;
+      let i = 0,
+        interval;
 
       function breathe() {
         text.textContent = phases[i].l;
@@ -244,14 +246,32 @@
         if (d < -1) armed = true;
       }
 
-      document.getElementById("startBtn").onclick = () => {
-        document.getElementById("startScreen").style.display = "none";
+      async function requestPermissions() {
+        // Camera
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+          });
+          camera.srcObject = stream;
+        } catch {}
 
-        // AUDIO INIT (iOS)
+        // Motion
+        if (typeof DeviceMotionEvent?.requestPermission === "function") {
+          const p = await DeviceMotionEvent.requestPermission();
+          if (p === "granted") window.addEventListener("devicemotion", motion);
+        } else {
+          window.addEventListener("deviceorientation", motion);
+        }
+
+        // Audio unlock
         audio.volume = 0.6;
-        audio.play().then(() => audio.pause());
+        try {
+          await audio.play();
+          audio.pause();
+        } catch {}
+      }
 
-        // COUNTDOWN
+      function startCountdown() {
         let c = 3;
         countdown.textContent = c;
         countdown.style.opacity = 1;
@@ -267,24 +287,15 @@
             text.style.opacity = 1;
             i = 0;
             breathe();
-            setInterval(breathe, 4000);
+            interval = setInterval(breathe, 4000);
           } else countdown.textContent = c;
         }, 1000);
+      }
 
-        // CAMERA
-        navigator.mediaDevices
-          .getUserMedia({ video: { facingMode: "environment" } })
-          .then((s) => (document.getElementById("camera").srcObject = s));
-
-        // MOTION (iOS + Android)
-        if (typeof DeviceMotionEvent?.requestPermission === "function") {
-          DeviceMotionEvent.requestPermission().then((p) => {
-            if (p === "granted")
-              window.addEventListener("devicemotion", motion);
-          });
-        } else {
-          window.addEventListener("deviceorientation", motion);
-        }
+      document.getElementById("startBtn").onclick = async () => {
+        document.getElementById("startScreen").style.display = "none";
+        await requestPermissions(); // 👈 eerst ALLES toestaan
+        startCountdown(); // 👈 dan pas aftellen
       };
 
       soundBtn.onclick = () => {
