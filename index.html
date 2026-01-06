@@ -255,31 +255,27 @@
       let base = null,
         armed = true,
         color = "gold";
-      const TILT_THRESHOLD = 20; // alleen omhoog kantelen > 20° schakelt kleur
+      const TILT_THRESHOLD = 20; // omhoogkantelen nodig om te schakelen
 
       function updateIndicator() {
         if (color === "gold") {
           indicatorBullet.style.background = "#61988c";
-          indicatorText.textContent = "Tilt your phone to switch to green!";
+          indicatorText.textContent = "Tilt up to switch to green";
+        } else if (color === "blue") {
+          indicatorBullet.style.background = "#61988c";
+          indicatorText.textContent = "Tilt up to switch to white";
         } else {
           indicatorBullet.style.background = "#fefefe";
-          indicatorText.textContent = "Tilt your phone to switch to white!";
+          indicatorText.textContent = "Tilt up to switch to green";
         }
       }
 
       function toggleColor() {
+        if (color === "gold") color = "blue"; // goud -> groen
+        else if (color === "blue") color = "white"; // groen -> wit
+        else color = "gold"; // wit -> goud
+
         if (color === "gold") {
-          document.documentElement.style.setProperty("--gold", "var(--blue)");
-          document.documentElement.style.setProperty(
-            "--gold-glow1",
-            "var(--blue-glow1)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "var(--blue-glow2)"
-          );
-          color = "blue";
-        } else {
           document.documentElement.style.setProperty("--gold", "#fefefe");
           document.documentElement.style.setProperty(
             "--gold-glow1",
@@ -289,7 +285,20 @@
             "--gold-glow2",
             "rgba(250,251,250,.6)"
           );
-          color = "gold";
+        } else if (color === "blue") {
+          document.documentElement.style.setProperty("--gold", "var(--blue)");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "var(--blue-glow1)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "var(--blue-glow2)"
+          );
+        } else {
+          document.documentElement.style.setProperty("--gold", "#fefefe");
+          document.documentElement.style.setProperty("--gold-glow1", "#fefefe");
+          document.documentElement.style.setProperty("--gold-glow2", "#fefefe");
         }
         updateIndicator();
       }
@@ -303,13 +312,15 @@
         }
 
         const delta = beta - base;
-        // alleen omhoog kantelen meer dan drempel
+
+        // alleen omhoog kantelen trigger
         if (delta < -TILT_THRESHOLD && armed) {
           armed = false;
           toggleColor();
         }
-        // reset armen als je terug beweegt
-        if (delta > -TILT_THRESHOLD / 2) armed = true;
+
+        // omlaag kantelen reset om volgende omhoog te registreren
+        if (delta > -5) armed = true;
       }
 
       /* PERMISSIONS */
