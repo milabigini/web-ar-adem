@@ -255,7 +255,7 @@
       let base = null,
         armed = true,
         color = "gold";
-      const TILT_THRESHOLD = 20; // omhoogkantelen nodig om te schakelen
+      const TILT_THRESHOLD = 5; // kleine kanteling is genoeg
 
       function updateIndicator() {
         if (color === "gold") {
@@ -313,13 +313,11 @@
 
         const delta = beta - base;
 
-        // alleen omhoog kantelen trigger
         if (delta < -TILT_THRESHOLD && armed) {
           armed = false;
           toggleColor();
         }
 
-        // omlaag kantelen reset om volgende omhoog te registreren
         if (delta > -5) armed = true;
       }
 
