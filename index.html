@@ -53,7 +53,7 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(0.94);
+        transform: translate(-50%, -50%) scale(0.7);
         transition: transform 4s ease-in-out;
       }
 
@@ -136,7 +136,6 @@
         margin-bottom: 50px;
       }
 
-      /* WITTE STARTKNOP */
       .start button {
         padding: 16px 40px;
         border-radius: 40px;
@@ -202,8 +201,8 @@
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
     <div class="tilt-indicator">
-      <div class="indicator-bullet"></div>
-      <div class="indicator-text">
+      <div class="indicator-bullet" id="bullet"></div>
+      <div class="indicator-text" id="indicatorText">
         Tilt your phone to play with the halo colors!
       </div>
     </div>
@@ -219,7 +218,6 @@
     <div class="countdown" id="countdown">3</div>
     <div class="text" id="text">INHALE</div>
 
-    <!-- ✅ JUISTE ORIGINELE TEKST -->
     <div class="start" id="startScreen">
       <h1>START YOUR BREATHING EXERCISE</h1>
       <p>
@@ -231,7 +229,134 @@
     </div>
 
     <script>
-      /* JS exact hetzelfde als jouw huidige werkende versie */
+      const startBtn = document.getElementById("startBtn");
+      const startScreen = document.getElementById("startScreen");
+      const haloMover = document.getElementById("haloMover");
+      const text = document.getElementById("text");
+      const countdown = document.getElementById("countdown");
+      const audio = document.getElementById("audio");
+      const soundBtn = document.getElementById("soundBtn");
+
+      /* CAMERA */
+      async function startCamera() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: false,
+          });
+          document.getElementById("camera").srcObject = stream;
+        } catch {}
+      }
+
+      /* BREATHING */
+      const phases = [
+        { label: "INHALE", scale: 1.12 },
+        { label: "HOLD", scale: 1.12 },
+        { label: "EXHALE", scale: 0.7 },
+        { label: "HOLD", scale: 0.7 },
+      ];
+
+      let phaseIndex = 0;
+      function applyPhase() {
+        const p = phases[phaseIndex];
+        text.textContent = p.label;
+        haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
+        phaseIndex = (phaseIndex + 1) % phases.length;
+      }
+
+      /* TILT COLOR */
+      let baseBeta = null;
+      let armed = true;
+      let colorState = "gold";
+
+      function toggleColor() {
+        if (colorState === "gold") {
+          document.documentElement.style.setProperty("--gold", "var(--blue)");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "var(--blue-glow1)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "var(--blue-glow2)"
+          );
+          colorState = "blue";
+        } else {
+          document.documentElement.style.setProperty("--gold", "#fefefe");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "rgba(250,251,250,0.9)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "rgba(250,251,250,0.6)"
+          );
+          colorState = "gold";
+        }
+      }
+
+      function handleOrientation(e) {
+        if (baseBeta === null) {
+          baseBeta = e.beta;
+          return;
+        }
+        const delta = baseBeta - e.beta;
+        if (delta > 1 && armed) {
+          armed = false;
+          toggleColor();
+        }
+        if (delta < -1) armed = true;
+      }
+
+      /* START FLOW (iOS SAFE) */
+      startBtn.addEventListener("click", async () => {
+        startScreen.style.display = "none";
+
+        await startCamera();
+
+        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+          const permission = await DeviceOrientationEvent.requestPermission();
+          if (permission === "granted") {
+            window.addEventListener("deviceorientation", handleOrientation);
+          }
+        } else {
+          window.addEventListener("deviceorientation", handleOrientation);
+        }
+
+        let count = 3;
+        countdown.textContent = count;
+        countdown.style.opacity = 1;
+
+        const timer = setInterval(async () => {
+          count--;
+          if (count === 0) {
+            clearInterval(timer);
+            countdown.style.opacity = 0;
+
+            await audio.play().catch(() => {});
+            soundBtn.style.opacity = 1;
+            soundBtn.style.pointerEvents = "auto";
+
+            text.style.opacity = 1;
+            phaseIndex = 0;
+            applyPhase();
+            setInterval(applyPhase, 4000);
+          } else {
+            countdown.textContent = count;
+          }
+        }, 1000);
+      });
+
+      /* SOUND TOGGLE */
+      soundBtn.addEventListener("click", () => {
+        if (audio.paused) {
+          audio.play();
+          soundBtn.textContent = "🔊";
+        } else {
+          audio.pause();
+          soundBtn.textContent = "🔇";
+        }
+      });
     </script>
   </body>
 </html>
