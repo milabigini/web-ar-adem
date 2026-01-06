@@ -13,7 +13,6 @@
         --gold: #fefefe;
         --gold-glow1: rgba(250, 251, 250, 0.9);
         --gold-glow2: rgba(250, 251, 250, 0.6);
-
         --blue: #61988c;
         --blue-glow1: rgba(97, 152, 140, 0.7);
         --blue-glow2: rgba(97, 152, 140, 0.5);
@@ -22,7 +21,6 @@
       html,
       body {
         margin: 0;
-        width: 100%;
         height: 100%;
         background: black;
         overflow: hidden;
@@ -31,7 +29,6 @@
         letter-spacing: 0.05em;
       }
 
-      /* CAMERA */
       video {
         position: fixed;
         inset: 0;
@@ -41,7 +38,6 @@
         z-index: 0;
       }
 
-      /* HALO */
       .overlay {
         position: fixed;
         inset: 0;
@@ -80,7 +76,6 @@
         height: 76vmin;
       }
 
-      /* BREATH TEXT */
       .text {
         position: fixed;
         bottom: 11%;
@@ -89,11 +84,9 @@
         font-size: 28px;
         color: var(--gold);
         opacity: 0;
-        transition: opacity 1s ease;
         z-index: 3;
       }
 
-      /* COUNTDOWN */
       .countdown {
         position: fixed;
         inset: 0;
@@ -101,17 +94,15 @@
         align-items: center;
         justify-content: center;
         font-size: 110px;
-        font-weight: 200;
         color: white;
-        opacity: 0;
         z-index: 5;
+        opacity: 0;
       }
 
-      /* START SCREEN */
       .start {
         position: fixed;
         inset: 0;
-        background: url("./blauw.png") center / cover;
+        background: url("./blauw.png") center/cover;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -122,20 +113,16 @@
       }
 
       .start h1 {
-        font-size: 28px;
-        font-weight: 200;
-        letter-spacing: 0.06em;
         text-transform: uppercase;
+        font-size: 28px;
         margin-bottom: 12px;
       }
-
       .start p {
         font-size: 16px;
         max-width: 320px;
         line-height: 1.5em;
         margin-bottom: 50px;
       }
-
       .start button {
         padding: 16px 40px;
         border-radius: 40px;
@@ -143,38 +130,9 @@
         background: white;
         color: #5e8f83;
         font-size: 16px;
-        letter-spacing: 0.05em;
         cursor: pointer;
       }
 
-      /* TILT INDICATOR */
-      .tilt-indicator {
-        position: fixed;
-        top: 5%;
-        width: 100%;
-        text-align: center;
-        z-index: 4;
-        pointer-events: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .indicator-bullet {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #61988c;
-      }
-
-      .indicator-text {
-        font-size: 16px;
-        color: white;
-        width: 260px;
-      }
-
-      /* SOUND */
       .sound-toggle {
         position: fixed;
         top: 18px;
@@ -183,14 +141,13 @@
         height: 42px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.25);
-        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
         opacity: 0.4;
         pointer-events: none;
         z-index: 20;
+        color: white;
       }
     </style>
   </head>
@@ -199,13 +156,6 @@
     <video id="camera" autoplay muted playsinline></video>
     <audio id="audio" src="muziek.mp3" loop></audio>
     <div class="sound-toggle" id="soundBtn">🔊</div>
-
-    <div class="tilt-indicator">
-      <div class="indicator-bullet" id="bullet"></div>
-      <div class="indicator-text" id="indicatorText">
-        Tilt your phone to play with the halo colors!
-      </div>
-    </div>
 
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
@@ -229,48 +179,32 @@
     </div>
 
     <script>
-      const startBtn = document.getElementById("startBtn");
-      const startScreen = document.getElementById("startScreen");
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
       const audio = document.getElementById("audio");
       const soundBtn = document.getElementById("soundBtn");
 
-      /* CAMERA */
-      async function startCamera() {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-            audio: false,
-          });
-          document.getElementById("camera").srcObject = stream;
-        } catch {}
-      }
-
-      /* BREATHING */
       const phases = [
-        { label: "INHALE", scale: 1.12 },
-        { label: "HOLD", scale: 1.12 },
-        { label: "EXHALE", scale: 0.7 },
-        { label: "HOLD", scale: 0.7 },
+        { l: "INHALE", s: 1.12 },
+        { l: "HOLD", s: 1.12 },
+        { l: "EXHALE", s: 0.7 },
+        { l: "HOLD", s: 0.7 },
       ];
+      let i = 0;
 
-      let phaseIndex = 0;
-      function applyPhase() {
-        const p = phases[phaseIndex];
-        text.textContent = p.label;
-        haloMover.style.transform = `translate(-50%, -50%) scale(${p.scale})`;
-        phaseIndex = (phaseIndex + 1) % phases.length;
+      function breathe() {
+        text.textContent = phases[i].l;
+        haloMover.style.transform = `translate(-50%,-50%) scale(${phases[i].s})`;
+        i = (i + 1) % phases.length;
       }
 
-      /* TILT COLOR */
-      let baseBeta = null;
-      let armed = true;
-      let colorState = "gold";
+      let base = null,
+        armed = true,
+        color = "gold";
 
       function toggleColor() {
-        if (colorState === "gold") {
+        if (color === "gold") {
           document.documentElement.style.setProperty("--gold", "var(--blue)");
           document.documentElement.style.setProperty(
             "--gold-glow1",
@@ -280,75 +214,80 @@
             "--gold-glow2",
             "var(--blue-glow2)"
           );
-          colorState = "blue";
+          color = "blue";
         } else {
           document.documentElement.style.setProperty("--gold", "#fefefe");
           document.documentElement.style.setProperty(
             "--gold-glow1",
-            "rgba(250,251,250,0.9)"
+            "rgba(250,251,250,.9)"
           );
           document.documentElement.style.setProperty(
             "--gold-glow2",
-            "rgba(250,251,250,0.6)"
+            "rgba(250,251,250,.6)"
           );
-          colorState = "gold";
+          color = "gold";
         }
       }
 
-      function handleOrientation(e) {
-        if (baseBeta === null) {
-          baseBeta = e.beta;
+      function motion(e) {
+        const b = e.beta || e.rotationRate?.beta;
+        if (b == null) return;
+        if (base == null) {
+          base = b;
           return;
         }
-        const delta = baseBeta - e.beta;
-        if (delta > 1 && armed) {
+        const d = base - b;
+        if (d > 1 && armed) {
           armed = false;
           toggleColor();
         }
-        if (delta < -1) armed = true;
+        if (d < -1) armed = true;
       }
 
-      /* START FLOW (iOS SAFE) */
-      startBtn.addEventListener("click", async () => {
-        startScreen.style.display = "none";
+      document.getElementById("startBtn").onclick = () => {
+        document.getElementById("startScreen").style.display = "none";
 
-        await startCamera();
+        // AUDIO INIT (iOS)
+        audio.volume = 0.6;
+        audio.play().then(() => audio.pause());
 
-        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-          const permission = await DeviceOrientationEvent.requestPermission();
-          if (permission === "granted") {
-            window.addEventListener("deviceorientation", handleOrientation);
-          }
-        } else {
-          window.addEventListener("deviceorientation", handleOrientation);
-        }
-
-        let count = 3;
-        countdown.textContent = count;
+        // COUNTDOWN
+        let c = 3;
+        countdown.textContent = c;
         countdown.style.opacity = 1;
 
-        const timer = setInterval(async () => {
-          count--;
-          if (count === 0) {
-            clearInterval(timer);
+        const t = setInterval(() => {
+          c--;
+          if (c === 0) {
+            clearInterval(t);
             countdown.style.opacity = 0;
-
-            await audio.play().catch(() => {});
+            audio.play();
             soundBtn.style.opacity = 1;
             soundBtn.style.pointerEvents = "auto";
-
             text.style.opacity = 1;
-            phaseIndex = 0;
-            applyPhase();
-            setInterval(applyPhase, 4000);
-          } else {
-            countdown.textContent = count;
-          }
+            i = 0;
+            breathe();
+            setInterval(breathe, 4000);
+          } else countdown.textContent = c;
         }, 1000);
-      });
 
-      /* SOUND TOGGLE */
-      soundBtn.addEventListener("click", () => {
+        // CAMERA
+        navigator.mediaDevices
+          .getUserMedia({ video: { facingMode: "environment" } })
+          .then((s) => (document.getElementById("camera").srcObject = s));
+
+        // MOTION (iOS + Android)
+        if (typeof DeviceMotionEvent?.requestPermission === "function") {
+          DeviceMotionEvent.requestPermission().then((p) => {
+            if (p === "granted")
+              window.addEventListener("devicemotion", motion);
+          });
+        } else {
+          window.addEventListener("deviceorientation", motion);
+        }
+      };
+
+      soundBtn.onclick = () => {
         if (audio.paused) {
           audio.play();
           soundBtn.textContent = "🔊";
@@ -356,7 +295,7 @@
           audio.pause();
           soundBtn.textContent = "🔇";
         }
-      });
+      };
     </script>
   </body>
 </html>
