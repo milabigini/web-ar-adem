@@ -255,6 +255,7 @@
       let base = null,
         armed = true,
         color = "gold";
+      const TILT_THRESHOLD = 20; // alleen omhoog kantelen > 20° schakelt kleur
 
       function updateIndicator() {
         if (color === "gold") {
@@ -294,18 +295,21 @@
       }
 
       function motion(e) {
-        const b = e.beta || e.rotationRate?.beta;
-        if (b == null) return;
+        let beta = e.beta || e.rotationRate?.beta;
+        if (beta == null) return;
         if (base == null) {
-          base = b;
+          base = beta;
           return;
         }
-        const d = base - b;
-        if (d > 1 && armed) {
+
+        const delta = beta - base;
+        // alleen omhoog kantelen meer dan drempel
+        if (delta < -TILT_THRESHOLD && armed) {
           armed = false;
           toggleColor();
         }
-        if (d < -1) armed = true;
+        // reset armen als je terug beweegt
+        if (delta > -TILT_THRESHOLD / 2) armed = true;
       }
 
       /* PERMISSIONS */
@@ -319,7 +323,8 @@
 
         if (typeof DeviceMotionEvent?.requestPermission === "function") {
           const p = await DeviceMotionEvent.requestPermission();
-          if (p === "granted") window.addEventListener("devicemotion", motion);
+          if (p === "granted")
+            window.addEventListener("deviceorientation", motion);
         } else {
           window.addEventListener("deviceorientation", motion);
         }
