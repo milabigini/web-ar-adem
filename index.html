@@ -219,7 +219,6 @@
     <audio id="audio" src="muziek.mp3" loop></audio>
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
-    <!-- TILT INFO -->
     <div class="tilt-indicator">
       <div class="indicator-bullet" id="indicatorBullet"></div>
       <div class="indicator-text" id="indicatorText">
@@ -248,13 +247,12 @@
       <button id="startBtn">START</button>
     </div>
 
-    <!-- ERROR POPUP -->
     <div id="errorPopup">
       <h2>Helaas 😔</h2>
       <p>
         De AR-ervaring werkt helaas niet op dit device.<br /><br />
-        Gebruik bij voorkeur een recente smartphone met bewegingssensoren en
-        cameratoegang.
+        Gebruik bij voorkeur een recente smartphone met bewegingssensoren,
+        cameratoegang en audio.
       </p>
       <button onclick="location.reload()">Opnieuw proberen</button>
     </div>
@@ -269,7 +267,10 @@
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
-      let motionDetected = false; // voor AR check
+      let motionDetected = false;
+      let cameraAccess = false;
+      let audioWorks = true;
+      let interval = null;
 
       /* BREATHING */
       const phases = [
@@ -278,8 +279,7 @@
         { l: "EXHALE", s: 0.7 },
         { l: "HOLD", s: 0.7 },
       ];
-      let i = 0,
-        interval;
+      let i = 0;
 
       function breathe() {
         text.textContent = phases[i].l;
@@ -291,7 +291,7 @@
       let base = null,
         armed = true,
         color = "gold";
-      const TILT_THRESHOLD = 5; // kleine kanteling is genoeg
+      const TILT_THRESHOLD = 5;
 
       function updateIndicator() {
         if (color === "gold") {
@@ -340,7 +340,7 @@
       }
 
       function motion(e) {
-        motionDetected = true; // ✅ motion data ontvangen
+        motionDetected = true;
         let beta = e.beta || e.rotationRate?.beta;
         if (beta == null) return;
         if (base == null) {
@@ -349,12 +349,10 @@
         }
 
         const delta = beta - base;
-
         if (delta < -TILT_THRESHOLD && armed) {
           armed = false;
           toggleColor();
         }
-
         if (delta > -5) armed = true;
       }
 
@@ -365,7 +363,10 @@
             video: { facingMode: "environment" },
           });
           camera.srcObject = stream;
-        } catch {}
+          cameraAccess = true;
+        } catch {
+          cameraAccess = false;
+        }
 
         if (typeof DeviceMotionEvent?.requestPermission === "function") {
           const p = await DeviceMotionEvent.requestPermission();
@@ -378,11 +379,16 @@
         try {
           await audio.play();
           audio.pause();
-        } catch {}
+          audioWorks = true;
+        } catch (e) {
+          audioWorks = false;
+        }
       }
 
       /* ERROR POPUP */
       function showErrorPopup() {
+        clearInterval(interval);
+        text.style.opacity = 0;
         document.getElementById("errorPopup").style.display = "flex";
       }
 
@@ -397,13 +403,25 @@
           if (c === 0) {
             clearInterval(t);
             countdown.style.opacity = 0;
-            audio.play();
+            audio.play().catch(() => {}); // probeer af te spelen
             soundBtn.style.opacity = 1;
             soundBtn.style.pointerEvents = "auto";
             text.style.opacity = 1;
             i = 0;
-            breathe();
             interval = setInterval(breathe, 4000);
+
+            // CHECK na 3 seconden: motion, camera, audio, halo breathing
+            setTimeout(() => {
+              const style = window.getComputedStyle(haloMover);
+              if (
+                !motionDetected ||
+                !cameraAccess ||
+                !audioWorks ||
+                style.transform === "none"
+              ) {
+                showErrorPopup();
+              }
+            }, 3000);
           } else countdown.textContent = c;
         }, 1000);
       }
@@ -411,16 +429,8 @@
       document.getElementById("startBtn").onclick = async () => {
         document.getElementById("startScreen").style.display = "none";
         updateIndicator();
-
         await requestPermissions();
         startCountdown();
-
-        // 3 seconden na start checken of motion-data is ontvangen
-        setTimeout(() => {
-          if (!motionDetected) {
-            showErrorPopup();
-          }
-        }, 3000);
       };
 
       /* SOUND */
