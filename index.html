@@ -7,18 +7,15 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>Scan & Meditate</title>
-
     <style>
       :root {
         --gold: #fefefe;
         --gold-glow1: rgba(250, 251, 250, 0.9);
         --gold-glow2: rgba(250, 251, 250, 0.6);
-
         --blue: #61988c;
         --blue-glow1: rgba(97, 152, 140, 0.7);
         --blue-glow2: rgba(97, 152, 140, 0.5);
       }
-
       html,
       body {
         margin: 0;
@@ -29,7 +26,6 @@
         font-weight: 100;
         letter-spacing: 0.05em;
       }
-
       video {
         position: fixed;
         inset: 0;
@@ -38,15 +34,12 @@
         object-fit: cover;
         z-index: 0;
       }
-
-      /* HALO */
       .overlay {
         position: fixed;
         inset: 0;
         pointer-events: none;
         z-index: 2;
       }
-
       .halo-mover {
         position: absolute;
         top: 50%;
@@ -54,7 +47,6 @@
         transform: translate(-50%, -50%) scale(0.7);
         transition: transform 4s ease-in-out;
       }
-
       .halo {
         position: absolute;
         top: 50%;
@@ -64,7 +56,6 @@
         border: 3px solid var(--gold);
         box-shadow: 0 0 40px var(--gold-glow1), 0 0 140px var(--gold-glow2);
       }
-
       .h1 {
         width: 52vmin;
         height: 52vmin;
@@ -77,8 +68,6 @@
         width: 76vmin;
         height: 76vmin;
       }
-
-      /* BREATH TEXT */
       .text {
         position: fixed;
         bottom: 11%;
@@ -89,8 +78,6 @@
         opacity: 0;
         z-index: 3;
       }
-
-      /* COUNTDOWN */
       .countdown {
         position: fixed;
         inset: 0;
@@ -102,8 +89,6 @@
         z-index: 5;
         opacity: 0;
       }
-
-      /* START SCREEN */
       .start {
         position: fixed;
         inset: 0;
@@ -116,7 +101,6 @@
         z-index: 10;
         color: white;
       }
-
       .start h1 {
         font-size: 28px;
         font-weight: 200;
@@ -124,14 +108,12 @@
         text-transform: uppercase;
         margin-bottom: 12px;
       }
-
       .start p {
         font-size: 16px;
         max-width: 320px;
         line-height: 1.5em;
         margin-bottom: 50px;
       }
-
       .start button {
         padding: 16px 40px;
         border-radius: 40px;
@@ -141,8 +123,6 @@
         font-size: 16px;
         cursor: pointer;
       }
-
-      /* TILT INDICATOR */
       .tilt-indicator {
         position: fixed;
         top: 5%;
@@ -154,7 +134,6 @@
         z-index: 4;
         pointer-events: none;
       }
-
       .indicator-bullet {
         width: 14px;
         height: 14px;
@@ -162,7 +141,6 @@
         background: #61988c;
         transition: background 0.4s ease;
       }
-
       .indicator-text {
         font-size: 16px;
         color: white;
@@ -170,8 +148,6 @@
         text-align: center;
         line-height: 1.2em;
       }
-
-      /* SOUND */
       .sound-toggle {
         position: fixed;
         top: 18px;
@@ -188,8 +164,6 @@
         z-index: 20;
         color: white;
       }
-
-      /* ERROR POPUP */
       #errorPopup {
         position: fixed;
         inset: 0;
@@ -213,7 +187,6 @@
       }
     </style>
   </head>
-
   <body>
     <video id="camera" autoplay muted playsinline></video>
     <audio id="audio" src="muziek.mp3" loop></audio>
@@ -250,9 +223,9 @@
     <div id="errorPopup">
       <h2>Helaas 😔</h2>
       <p>
-        De AR-ervaring werkt helaas niet op dit device.<br /><br />
-        Gebruik bij voorkeur een recente smartphone met bewegingssensoren,
-        cameratoegang en audio.
+        De AR-ervaring werkt helaas niet op dit device.<br /><br />Gebruik bij
+        voorkeur een recente smartphone met bewegingssensoren, cameratoegang en
+        audio.
       </p>
       <button onclick="location.reload()">Opnieuw proberen</button>
     </div>
@@ -280,7 +253,6 @@
         { l: "HOLD", s: 0.7 },
       ];
       let i = 0;
-
       function breathe() {
         text.textContent = phases[i].l;
         haloMover.style.transform = `translate(-50%,-50%) scale(${phases[i].s})`;
@@ -292,7 +264,6 @@
         armed = true,
         color = "gold";
       const TILT_THRESHOLD = 5;
-
       function updateIndicator() {
         if (color === "gold") {
           indicatorBullet.style.background = "#61988c";
@@ -305,12 +276,8 @@
           indicatorText.textContent = "Tilt up to switch to green";
         }
       }
-
       function toggleColor() {
-        if (color === "gold") color = "blue";
-        else if (color === "blue") color = "white";
-        else color = "gold";
-
+        color = color === "gold" ? "blue" : color === "blue" ? "white" : "gold";
         if (color === "gold") {
           document.documentElement.style.setProperty("--gold", "#fefefe");
           document.documentElement.style.setProperty(
@@ -338,7 +305,6 @@
         }
         updateIndicator();
       }
-
       function motion(e) {
         motionDetected = true;
         let beta = e.beta || e.rotationRate?.beta;
@@ -347,7 +313,6 @@
           base = beta;
           return;
         }
-
         const delta = beta - base;
         if (delta < -TILT_THRESHOLD && armed) {
           armed = false;
@@ -358,29 +323,38 @@
 
       /* PERMISSIONS */
       async function requestPermissions() {
+        // Camera
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" },
           });
           camera.srcObject = stream;
           cameraAccess = true;
-        } catch {
+        } catch (err) {
+          console.log("Camera error:", err);
           cameraAccess = false;
         }
 
+        // Motion
         if (typeof DeviceMotionEvent?.requestPermission === "function") {
-          const p = await DeviceMotionEvent.requestPermission();
-          if (p === "granted")
-            window.addEventListener("deviceorientation", motion);
+          try {
+            const p = await DeviceMotionEvent.requestPermission();
+            if (p === "granted")
+              window.addEventListener("deviceorientation", motion);
+          } catch (err) {
+            console.log("Motion permission denied:", err);
+          }
         } else {
           window.addEventListener("deviceorientation", motion);
         }
 
+        // Audio
         try {
           await audio.play();
           audio.pause();
           audioWorks = true;
-        } catch (e) {
+        } catch (err) {
+          console.log("Audio error:", err);
           audioWorks = false;
         }
       }
@@ -403,25 +377,25 @@
           if (c === 0) {
             clearInterval(t);
             countdown.style.opacity = 0;
-            audio.play().catch(() => {}); // probeer af te spelen
+            audio.play().catch(() => {});
             soundBtn.style.opacity = 1;
             soundBtn.style.pointerEvents = "auto";
             text.style.opacity = 1;
             i = 0;
             interval = setInterval(breathe, 4000);
 
-            // CHECK na 3 seconden: motion, camera, audio, halo breathing
+            // CHECK na 5 seconden: motion, camera, audio, halo breathing
             setTimeout(() => {
-              const style = window.getComputedStyle(haloMover);
+              const transform = haloMover.style.transform || "";
               if (
                 !motionDetected ||
                 !cameraAccess ||
                 !audioWorks ||
-                style.transform === "none"
+                !transform.includes("scale")
               ) {
                 showErrorPopup();
               }
-            }, 3000);
+            }, 5000); // 5 seconden i.p.v 3
           } else countdown.textContent = c;
         }, 1000);
       }
