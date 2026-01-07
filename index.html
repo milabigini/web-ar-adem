@@ -188,6 +188,29 @@
         z-index: 20;
         color: white;
       }
+
+      /* ERROR POPUP */
+      #errorPopup {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        display: none;
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 30px;
+        flex-direction: column;
+      }
+      #errorPopup button {
+        margin-top: 20px;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 30px;
+        font-size: 16px;
+        cursor: pointer;
+      }
     </style>
   </head>
 
@@ -225,6 +248,17 @@
       <button id="startBtn">START</button>
     </div>
 
+    <!-- ERROR POPUP -->
+    <div id="errorPopup">
+      <h2>Helaas 😔</h2>
+      <p>
+        De AR-ervaring werkt helaas niet op dit device.<br /><br />
+        Gebruik bij voorkeur een recente smartphone met bewegingssensoren en
+        cameratoegang.
+      </p>
+      <button onclick="location.reload()">Opnieuw proberen</button>
+    </div>
+
     <script>
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
@@ -234,6 +268,8 @@
       const camera = document.getElementById("camera");
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
+
+      let motionDetected = false; // voor AR check
 
       /* BREATHING */
       const phases = [
@@ -271,9 +307,9 @@
       }
 
       function toggleColor() {
-        if (color === "gold") color = "blue"; // goud -> groen
-        else if (color === "blue") color = "white"; // groen -> wit
-        else color = "gold"; // wit -> goud
+        if (color === "gold") color = "blue";
+        else if (color === "blue") color = "white";
+        else color = "gold";
 
         if (color === "gold") {
           document.documentElement.style.setProperty("--gold", "#fefefe");
@@ -304,6 +340,7 @@
       }
 
       function motion(e) {
+        motionDetected = true; // ✅ motion data ontvangen
         let beta = e.beta || e.rotationRate?.beta;
         if (beta == null) return;
         if (base == null) {
@@ -344,6 +381,11 @@
         } catch {}
       }
 
+      /* ERROR POPUP */
+      function showErrorPopup() {
+        document.getElementById("errorPopup").style.display = "flex";
+      }
+
       /* START */
       function startCountdown() {
         let c = 3;
@@ -369,8 +411,16 @@
       document.getElementById("startBtn").onclick = async () => {
         document.getElementById("startScreen").style.display = "none";
         updateIndicator();
+
         await requestPermissions();
         startCountdown();
+
+        // 3 seconden na start checken of motion-data is ontvangen
+        setTimeout(() => {
+          if (!motionDetected) {
+            showErrorPopup();
+          }
+        }, 3000);
       };
 
       /* SOUND */
