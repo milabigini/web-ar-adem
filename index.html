@@ -9,14 +9,10 @@
     <title>Scan & Meditate</title>
 
     <style>
-      /* =========================
-         KLEUREN IN AR
-      ========================= */
       :root {
         --gold: #fefefe;
         --gold-glow1: rgba(250, 251, 250, 0.9);
         --gold-glow2: rgba(250, 251, 250, 0.6);
-
         --blue: #61988c;
         --blue-glow1: rgba(97, 152, 140, 0.7);
         --blue-glow2: rgba(97, 152, 140, 0.5);
@@ -29,13 +25,8 @@
         background: black;
         overflow: hidden;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-weight: 100;
-        letter-spacing: 0.05em;
       }
 
-      /* =========================
-         CAMERA POSITIE
-      ========================= */
       video {
         position: fixed;
         inset: 0;
@@ -45,9 +36,6 @@
         z-index: 0;
       }
 
-      /* =========================
-         HALO OVERLAY
-      ========================= */
       .overlay {
         position: fixed;
         inset: 0;
@@ -86,9 +74,6 @@
         height: 76vmin;
       }
 
-      /* =========================
-         TEKST & COUNTDOWN
-      ========================= */
       .text {
         position: fixed;
         bottom: 11%;
@@ -112,9 +97,6 @@
         opacity: 0;
       }
 
-      /* =========================
-         START SCHERM
-      ========================= */
       .start {
         position: fixed;
         inset: 0;
@@ -128,20 +110,6 @@
         color: white;
       }
 
-      .start h1 {
-        font-size: 28px;
-        font-weight: 200;
-        text-transform: uppercase;
-        margin-bottom: 12px;
-      }
-
-      .start p {
-        font-size: 16px;
-        max-width: 320px;
-        line-height: 1.5em;
-        margin-bottom: 50px;
-      }
-
       .start button {
         padding: 16px 40px;
         border-radius: 40px;
@@ -149,41 +117,8 @@
         background: white;
         color: #5e8f83;
         font-size: 16px;
-        cursor: pointer;
       }
 
-      /* =========================
-         TILT ONDERDEEL
-      ========================= */
-      .tilt-indicator {
-        position: fixed;
-        top: 5%;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        z-index: 4;
-        pointer-events: none;
-      }
-
-      .indicator-bullet {
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: #61988c;
-      }
-
-      .indicator-text {
-        font-size: 16px;
-        color: white;
-        width: 260px;
-        text-align: center;
-      }
-
-      /* =========================
-         GELUID KNOP
-      ========================= */
       .sound-toggle {
         position: fixed;
         top: 18px;
@@ -195,15 +130,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0.4;
+        opacity: 0;
         pointer-events: none;
         z-index: 20;
         color: white;
       }
 
-      /* =========================
-         POPUPS
-      ========================= */
       #errorPopup,
       #colorWarning {
         position: fixed;
@@ -214,28 +146,18 @@
         z-index: 100;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
         text-align: center;
         padding: 30px;
-        flex-direction: column;
       }
     </style>
   </head>
 
   <body>
-    <!-- CAMERA -->
     <video id="camera" autoplay muted playsinline></video>
-
-    <!-- AUDIO -->
     <audio id="audio" src="muziek.mp3" loop></audio>
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
-    <!-- TILT UI -->
-    <div class="tilt-indicator">
-      <div class="indicator-bullet"></div>
-      <div class="indicator-text">Tilt your phone up to change halo colors</div>
-    </div>
-
-    <!-- HALO -->
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
         <div class="halo h3"></div>
@@ -247,18 +169,12 @@
     <div class="countdown" id="countdown">3</div>
     <div class="text" id="text">INHALE</div>
 
-    <!-- START -->
     <div class="start" id="startScreen">
       <h1>Start Your Breathing Exercise</h1>
-      <p>
-        This exercise helps you focus and relax. We’ll use your camera to track
-        your device orientation so you can interact with the halo as you
-        breathe.
-      </p>
+      <p>This exercise uses your camera and motion sensors.</p>
       <button id="startBtn">START</button>
     </div>
 
-    <!-- ERRORS -->
     <div id="errorPopup">
       <h2>Unfortunately</h2>
       <p>This AR experience does not work on your device.</p>
@@ -267,10 +183,7 @@
 
     <div id="colorWarning">
       <h2>Notice</h2>
-      <p>
-        Color interaction is not supported on this device.<br />
-        You can continue the breathing exercise without color changes.
-      </p>
+      <p>Color interaction not supported.</p>
       <button onclick="this.parentElement.style.display='none'">
         Continue
       </button>
@@ -285,12 +198,10 @@
       const camera = document.getElementById("camera");
 
       let cameraAccess = false;
-      let audioWorks = true;
+      let audioWorks = false;
       let colorTiltWorks = false;
 
-      /* =========================
-         ADEMHALING
-      ========================= */
+      /* BREATHING */
       const phases = [
         { l: "INHALE", s: 1.12 },
         { l: "HOLD", s: 1.12 },
@@ -298,79 +209,49 @@
         { l: "HOLD", s: 0.7 },
       ];
       let i = 0;
-
       function breathe() {
         text.textContent = phases[i].l;
         haloMover.style.transform = `translate(-50%,-50%) scale(${phases[i].s})`;
         i = (i + 1) % phases.length;
       }
 
-      /* =========================
-         TILT → KLEUR
-      ========================= */
-      let base = null;
-      let armed = true;
-      let isGreen = false;
-
+      /* TILT */
+      let base = null,
+        armed = true,
+        isGreen = false;
       function motion(e) {
-        let beta = e.beta;
-        if (beta == null) return;
-
+        if (e.beta == null) return;
         colorTiltWorks = true;
-
         if (base === null) {
-          base = beta;
+          base = e.beta;
           return;
         }
-
-        const delta = beta - base;
-
-        if (delta < -4 && armed) {
+        const d = e.beta - base;
+        if (d < -4 && armed) {
           armed = false;
           isGreen = !isGreen;
-
-          if (isGreen) {
-            document.documentElement.style.setProperty("--gold", "var(--blue)");
-            document.documentElement.style.setProperty(
-              "--gold-glow1",
-              "var(--blue-glow1)"
-            );
-            document.documentElement.style.setProperty(
-              "--gold-glow2",
-              "var(--blue-glow2)"
-            );
-          } else {
-            document.documentElement.style.setProperty("--gold", "#fefefe");
-            document.documentElement.style.setProperty(
-              "--gold-glow1",
-              "rgba(250,251,250,.9)"
-            );
-            document.documentElement.style.setProperty(
-              "--gold-glow2",
-              "rgba(250,251,250,.6)"
-            );
-          }
+          document.documentElement.style.setProperty(
+            "--gold",
+            isGreen ? "var(--blue)" : "#fefefe"
+          );
         }
-
-        if (delta > -1) armed = true;
+        if (d > -1) armed = true;
       }
 
-      /* =========================
-         PERMISSIES (ACHTERCAMERA)
-      ========================= */
-      async function requestPermissions() {
+      /* START CLICK = iOS SAFE */
+      document.getElementById("startBtn").onclick = async () => {
+        document.getElementById("startScreen").style.display = "none";
+
+        /* CAMERA */
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: { ideal: "environment" },
-            },
+            video: { facingMode: { ideal: "environment" } },
           });
           camera.srcObject = stream;
           cameraAccess = true;
-        } catch {
-          cameraAccess = false;
-        }
+        } catch {}
 
+        /* MOTION */
         if (typeof DeviceOrientationEvent?.requestPermission === "function") {
           const p = await DeviceOrientationEvent.requestPermission();
           if (p === "granted")
@@ -379,18 +260,14 @@
           window.addEventListener("deviceorientation", motion);
         }
 
+        /* AUDIO UNLOCK (CRUCIAAL) */
         try {
           await audio.play();
           audio.pause();
-        } catch {
-          audioWorks = false;
-        }
-      }
+          audioWorks = true;
+        } catch {}
 
-      /* =========================
-         START
-      ========================= */
-      function startCountdown() {
+        /* COUNTDOWN */
         let c = 3;
         countdown.style.opacity = 1;
         countdown.textContent = c;
@@ -410,27 +287,15 @@
             setInterval(breathe, 4000);
 
             setTimeout(() => {
-              if (!cameraAccess || !audioWorks) {
-                document.getElementById("errorPopup").style.display = "flex";
-              } else if (!colorTiltWorks) {
-                document.getElementById("colorWarning").style.display = "flex";
-              }
-            }, 5000);
-          } else {
-            countdown.textContent = c;
-          }
+              if (!cameraAccess || !audioWorks)
+                errorPopup.style.display = "flex";
+              else if (!colorTiltWorks) colorWarning.style.display = "flex";
+            }, 4000);
+          } else countdown.textContent = c;
         }, 1000);
-      }
-
-      document.getElementById("startBtn").onclick = async () => {
-        document.getElementById("startScreen").style.display = "none";
-        await requestPermissions();
-        startCountdown();
       };
 
-      soundBtn.onclick = () => {
-        audio.paused ? audio.play() : audio.pause();
-      };
+      soundBtn.onclick = () => (audio.paused ? audio.play() : audio.pause());
     </script>
   </body>
 </html>
