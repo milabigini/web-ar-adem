@@ -222,15 +222,20 @@
   </head>
 
   <body>
+    <!-- CAMERA -->
     <video id="camera" autoplay muted playsinline></video>
+
+    <!-- AUDIO -->
     <audio id="audio" src="muziek.mp3" loop></audio>
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
+    <!-- TILT UI -->
     <div class="tilt-indicator">
       <div class="indicator-bullet"></div>
       <div class="indicator-text">Tilt your phone up to change halo colors</div>
     </div>
 
+    <!-- HALO -->
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
         <div class="halo h3"></div>
@@ -242,6 +247,7 @@
     <div class="countdown" id="countdown">3</div>
     <div class="text" id="text">INHALE</div>
 
+    <!-- START -->
     <div class="start" id="startScreen">
       <h1>Start Your Breathing Exercise</h1>
       <p>
@@ -252,6 +258,7 @@
       <button id="startBtn">START</button>
     </div>
 
+    <!-- ERRORS -->
     <div id="errorPopup">
       <h2>Unfortunately</h2>
       <p>This AR experience does not work on your device.</p>
@@ -299,7 +306,7 @@
       }
 
       /* =========================
-         TILT → KLEUR (FIXED)
+         TILT → KLEUR
       ========================= */
       let base = null;
       let armed = true;
@@ -318,7 +325,6 @@
 
         const delta = beta - base;
 
-        // ⬆️ kleine tilt omhoog
         if (delta < -4 && armed) {
           armed = false;
           isGreen = !isGreen;
@@ -346,23 +352,24 @@
           }
         }
 
-        // 🔁 reset wanneer terug naar neutraal
-        if (delta > -1) {
-          armed = true;
-        }
+        if (delta > -1) armed = true;
       }
 
       /* =========================
-         PERMISSIES
+         PERMISSIES (ACHTERCAMERA)
       ========================= */
       async function requestPermissions() {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
+            video: {
+              facingMode: { ideal: "environment" },
+            },
           });
           camera.srcObject = stream;
           cameraAccess = true;
-        } catch {}
+        } catch {
+          cameraAccess = false;
+        }
 
         if (typeof DeviceOrientationEvent?.requestPermission === "function") {
           const p = await DeviceOrientationEvent.requestPermission();
