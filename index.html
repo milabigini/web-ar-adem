@@ -225,7 +225,7 @@
     <div id="errorPopup">
       <h2>Unfortunately</h2>
       <p id="errorMsg">The AR experience cannot run.</p>
-      <button onclick="location.reload()">Go back</button>
+      <button onclick="location.reload()">Home</button>
     </div>
 
     <div id="colorWarning">
@@ -394,7 +394,7 @@
                 !transform.includes("scale")
               ) {
                 showErrorPopup(
-                  "Camera, audio, or halo not working. Returning home."
+                  "The AR experience does not work on this device."
                 );
               } else if (!motionDetected) {
                 showColorWarning(); // color tilt faalt, maar ervaring gaat door
