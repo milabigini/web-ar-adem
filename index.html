@@ -10,7 +10,7 @@
 
     <style>
       /* =========================
-         KLEUREN
+         KLEUREN IN AR
          ========================= */
       :root {
         --gold: #fefefe;
@@ -33,7 +33,7 @@
       }
 
       /* =========================
-         CAMERA
+         CAMERA POSITIE
          ========================= */
       video {
         position: fixed;
@@ -152,7 +152,7 @@
       }
 
       /* =========================
-         TILT UI
+         TILT ONDERDEEL
          ========================= */
       .tilt-indicator {
         position: fixed;
@@ -267,14 +267,14 @@
       <button id="startBtn">START</button>
     </div>
 
-    <!-- KRITISCHE ERROR -->
+    <!-- HELEMAAL NIET WERKEN ERROR -->
     <div id="errorPopup">
       <h2>Unfortunately</h2>
       <p>This AR experience does not work on your device.</p>
       <button onclick="location.reload()">HOME</button>
     </div>
 
-    <!-- KLEUR WAARSCHUWING -->
+    <!-- KLEUR WAARSCHUWING ERROR -->
     <div id="colorWarning">
       <h2>Notice</h2>
       <p>
@@ -301,7 +301,7 @@
       let interval = null;
 
       /* =========================
-         ADEMHALING
+         ADEMHALING TEMPO
          ========================= */
       const phases = [
         { l: "INHALE", s: 1.12 },
@@ -318,7 +318,7 @@
       }
 
       /* =========================
-         TILT → KLEUR
+         TILT → KLEUR VERANDERING
          ========================= */
       let base = null;
       function motion(e) {
