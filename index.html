@@ -164,7 +164,8 @@
         z-index: 20;
         color: white;
       }
-      #errorPopup {
+      #errorPopup,
+      #colorWarning {
         position: fixed;
         inset: 0;
         background: rgba(0, 0, 0, 0.85);
@@ -177,7 +178,8 @@
         padding: 30px;
         flex-direction: column;
       }
-      #errorPopup button {
+      #errorPopup button,
+      #colorWarning button {
         margin-top: 20px;
         padding: 14px 30px;
         border: none;
@@ -222,8 +224,19 @@
 
     <div id="errorPopup">
       <h2>Unfortunately</h2>
-      <p>The AR experience does not work on this device.</p>
-      <button onclick="location.reload()">HOME</button>
+      <p id="errorMsg">The AR experience cannot run.</p>
+      <button onclick="location.reload()">Go back</button>
+    </div>
+
+    <div id="colorWarning">
+      <h2>Notice</h2>
+      <p>
+        Color tilt is not working on this device. The experience continues
+        without color changes.
+      </p>
+      <button onclick="this.parentElement.style.display='none'">
+        Continue
+      </button>
     </div>
 
     <script>
@@ -267,13 +280,10 @@
         } else if (color === "blue") {
           indicatorBullet.style.background = "#61988c";
           indicatorText.textContent = "Tilt up to switch to white";
-        } else {
-          indicatorBullet.style.background = "#fefefe";
-          indicatorText.textContent = "Tilt up to switch to green";
         }
       }
       function toggleColor() {
-        color = color === "gold" ? "blue" : color === "blue" ? "white" : "gold";
+        color = color === "gold" ? "blue" : "gold";
         if (color === "gold") {
           document.documentElement.style.setProperty("--gold", "#fefefe");
           document.documentElement.style.setProperty(
@@ -284,7 +294,7 @@
             "--gold-glow2",
             "rgba(250,251,250,.6)"
           );
-        } else if (color === "blue") {
+        } else {
           document.documentElement.style.setProperty("--gold", "var(--blue)");
           document.documentElement.style.setProperty(
             "--gold-glow1",
@@ -294,10 +304,6 @@
             "--gold-glow2",
             "var(--blue-glow2)"
           );
-        } else {
-          document.documentElement.style.setProperty("--gold", "#fefefe");
-          document.documentElement.style.setProperty("--gold-glow1", "#fefefe");
-          document.documentElement.style.setProperty("--gold-glow2", "#fefefe");
         }
         updateIndicator();
       }
@@ -319,7 +325,6 @@
 
       /* PERMISSIONS */
       async function requestPermissions() {
-        // Camera
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" },
@@ -327,47 +332,47 @@
           camera.srcObject = stream;
           cameraAccess = true;
         } catch (err) {
-          console.log("Camera error:", err);
           cameraAccess = false;
+          console.log("Camera error:", err);
         }
-
-        // Motion
         if (typeof DeviceMotionEvent?.requestPermission === "function") {
           try {
             const p = await DeviceMotionEvent.requestPermission();
             if (p === "granted")
               window.addEventListener("deviceorientation", motion);
           } catch (err) {
-            console.log("Motion permission denied:", err);
+            console.log("Motion denied", err);
           }
         } else {
           window.addEventListener("deviceorientation", motion);
         }
-
-        // Audio
         try {
           await audio.play();
           audio.pause();
           audioWorks = true;
         } catch (err) {
-          console.log("Audio error:", err);
           audioWorks = false;
+          console.log("Audio error", err);
         }
       }
 
-      /* ERROR POPUP */
-      function showErrorPopup() {
+      /* POPUPS */
+      function showErrorPopup(msg) {
         clearInterval(interval);
         text.style.opacity = 0;
-        document.getElementById("errorPopup").style.display = "flex";
+        const popup = document.getElementById("errorPopup");
+        document.getElementById("errorMsg").textContent = msg;
+        popup.style.display = "flex";
+      }
+      function showColorWarning() {
+        document.getElementById("colorWarning").style.display = "flex";
       }
 
-      /* START */
+      /* START COUNTDOWN */
       function startCountdown() {
         let c = 3;
-        countdown.textContent = c;
         countdown.style.opacity = 1;
-
+        countdown.textContent = c;
         const t = setInterval(() => {
           c--;
           if (c === 0) {
@@ -380,18 +385,21 @@
             i = 0;
             interval = setInterval(breathe, 4000);
 
-            // CHECK na 5 seconden: motion, camera, audio, halo breathing
+            // CHECK na 5 seconden
             setTimeout(() => {
               const transform = haloMover.style.transform || "";
               if (
-                !motionDetected ||
                 !cameraAccess ||
                 !audioWorks ||
                 !transform.includes("scale")
               ) {
-                showErrorPopup();
+                showErrorPopup(
+                  "Camera, audio, or halo not working. Returning home."
+                );
+              } else if (!motionDetected) {
+                showColorWarning(); // color tilt faalt, maar ervaring gaat door
               }
-            }, 5000); // 5 seconden i.p.v 3
+            }, 5000);
           } else countdown.textContent = c;
         }, 1000);
       }
