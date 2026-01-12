@@ -11,11 +11,12 @@
     <style>
       /* =========================
          KLEUREN IN AR
-         ========================= */
+      ========================= */
       :root {
         --gold: #fefefe;
         --gold-glow1: rgba(250, 251, 250, 0.9);
         --gold-glow2: rgba(250, 251, 250, 0.6);
+
         --blue: #61988c;
         --blue-glow1: rgba(97, 152, 140, 0.7);
         --blue-glow2: rgba(97, 152, 140, 0.5);
@@ -34,7 +35,7 @@
 
       /* =========================
          CAMERA POSITIE
-         ========================= */
+      ========================= */
       video {
         position: fixed;
         inset: 0;
@@ -46,7 +47,7 @@
 
       /* =========================
          HALO OVERLAY
-         ========================= */
+      ========================= */
       .overlay {
         position: fixed;
         inset: 0;
@@ -87,7 +88,7 @@
 
       /* =========================
          TEKST & COUNTDOWN
-         ========================= */
+      ========================= */
       .text {
         position: fixed;
         bottom: 11%;
@@ -113,7 +114,7 @@
 
       /* =========================
          START SCHERM
-         ========================= */
+      ========================= */
       .start {
         position: fixed;
         inset: 0;
@@ -153,7 +154,7 @@
 
       /* =========================
          TILT ONDERDEEL
-         ========================= */
+      ========================= */
       .tilt-indicator {
         position: fixed;
         top: 5%;
@@ -182,7 +183,7 @@
 
       /* =========================
          GELUID KNOP
-         ========================= */
+      ========================= */
       .sound-toggle {
         position: fixed;
         top: 18px;
@@ -202,7 +203,7 @@
 
       /* =========================
          POPUPS
-         ========================= */
+      ========================= */
       #errorPopup,
       #colorWarning {
         position: fixed;
@@ -217,34 +218,19 @@
         padding: 30px;
         flex-direction: column;
       }
-
-      #errorPopup button,
-      #colorWarning button {
-        margin-top: 20px;
-        padding: 14px 30px;
-        border: none;
-        border-radius: 30px;
-        font-size: 16px;
-        cursor: pointer;
-      }
     </style>
   </head>
 
   <body>
-    <!-- CAMERA -->
     <video id="camera" autoplay muted playsinline></video>
-
-    <!-- AUDIO -->
     <audio id="audio" src="muziek.mp3" loop></audio>
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
-    <!-- TILT UI -->
     <div class="tilt-indicator">
       <div class="indicator-bullet"></div>
-      <div class="indicator-text">Tilt your phone to change halo colors</div>
+      <div class="indicator-text">Tilt your phone up to change halo colors</div>
     </div>
 
-    <!-- HALO -->
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
         <div class="halo h3"></div>
@@ -256,7 +242,6 @@
     <div class="countdown" id="countdown">3</div>
     <div class="text" id="text">INHALE</div>
 
-    <!-- START -->
     <div class="start" id="startScreen">
       <h1>Start Your Breathing Exercise</h1>
       <p>
@@ -267,14 +252,12 @@
       <button id="startBtn">START</button>
     </div>
 
-    <!-- HELEMAAL NIET WERKEN ERROR -->
     <div id="errorPopup">
       <h2>Unfortunately</h2>
       <p>This AR experience does not work on your device.</p>
       <button onclick="location.reload()">HOME</button>
     </div>
 
-    <!-- KLEUR WAARSCHUWING ERROR -->
     <div id="colorWarning">
       <h2>Notice</h2>
       <p>
@@ -294,23 +277,21 @@
       const soundBtn = document.getElementById("soundBtn");
       const camera = document.getElementById("camera");
 
-      let motionDetected = false;
-      let colorTiltWorks = false;
       let cameraAccess = false;
       let audioWorks = true;
-      let interval = null;
+      let colorTiltWorks = false;
 
       /* =========================
-         ADEMHALING TEMPO
-         ========================= */
+         ADEMHALING
+      ========================= */
       const phases = [
         { l: "INHALE", s: 1.12 },
         { l: "HOLD", s: 1.12 },
         { l: "EXHALE", s: 0.7 },
         { l: "HOLD", s: 0.7 },
       ];
-
       let i = 0;
+
       function breathe() {
         text.textContent = phases[i].l;
         haloMover.style.transform = `translate(-50%,-50%) scale(${phases[i].s})`;
@@ -318,29 +299,62 @@
       }
 
       /* =========================
-         TILT → KLEUR VERANDERING
-         ========================= */
+         TILT → KLEUR (FIXED)
+      ========================= */
       let base = null;
-      function motion(e) {
-        motionDetected = true;
-        colorTiltWorks = true;
+      let armed = true;
+      let isGreen = false;
 
+      function motion(e) {
         let beta = e.beta;
         if (beta == null) return;
 
-        if (base == null) {
+        colorTiltWorks = true;
+
+        if (base === null) {
           base = beta;
           return;
         }
 
-        if (beta - base < -5) {
-          document.documentElement.style.setProperty("--gold", "#61988c");
+        const delta = beta - base;
+
+        // ⬆️ kleine tilt omhoog
+        if (delta < -4 && armed) {
+          armed = false;
+          isGreen = !isGreen;
+
+          if (isGreen) {
+            document.documentElement.style.setProperty("--gold", "var(--blue)");
+            document.documentElement.style.setProperty(
+              "--gold-glow1",
+              "var(--blue-glow1)"
+            );
+            document.documentElement.style.setProperty(
+              "--gold-glow2",
+              "var(--blue-glow2)"
+            );
+          } else {
+            document.documentElement.style.setProperty("--gold", "#fefefe");
+            document.documentElement.style.setProperty(
+              "--gold-glow1",
+              "rgba(250,251,250,.9)"
+            );
+            document.documentElement.style.setProperty(
+              "--gold-glow2",
+              "rgba(250,251,250,.6)"
+            );
+          }
+        }
+
+        // 🔁 reset wanneer terug naar neutraal
+        if (delta > -1) {
+          armed = true;
         }
       }
 
       /* =========================
          PERMISSIES
-         ========================= */
+      ========================= */
       async function requestPermissions() {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
@@ -350,7 +364,13 @@
           cameraAccess = true;
         } catch {}
 
-        window.addEventListener("deviceorientation", motion);
+        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+          const p = await DeviceOrientationEvent.requestPermission();
+          if (p === "granted")
+            window.addEventListener("deviceorientation", motion);
+        } else {
+          window.addEventListener("deviceorientation", motion);
+        }
 
         try {
           await audio.play();
@@ -362,15 +382,14 @@
 
       /* =========================
          START
-         ========================= */
+      ========================= */
       function startCountdown() {
         let c = 3;
         countdown.style.opacity = 1;
+        countdown.textContent = c;
 
         const t = setInterval(() => {
           c--;
-          countdown.textContent = c;
-
           if (c === 0) {
             clearInterval(t);
             countdown.style.opacity = 0;
@@ -380,27 +399,18 @@
             soundBtn.style.pointerEvents = "auto";
             text.style.opacity = 1;
 
-            interval = setInterval(breathe, 4000);
+            breathe();
+            setInterval(breathe, 4000);
 
             setTimeout(() => {
-              const transform = haloMover.style.transform || "";
-
-              // ❌ Kritisch
-              if (
-                !cameraAccess ||
-                !audioWorks ||
-                !transform.includes("scale")
-              ) {
+              if (!cameraAccess || !audioWorks) {
                 document.getElementById("errorPopup").style.display = "flex";
-                clearInterval(interval);
-                return;
-              }
-
-              // ⚠️ Alleen kleur
-              if (!colorTiltWorks) {
+              } else if (!colorTiltWorks) {
                 document.getElementById("colorWarning").style.display = "flex";
               }
             }, 5000);
+          } else {
+            countdown.textContent = c;
           }
         }, 1000);
       }
@@ -412,13 +422,7 @@
       };
 
       soundBtn.onclick = () => {
-        if (audio.paused) {
-          audio.play();
-          soundBtn.textContent = "🔊";
-        } else {
-          audio.pause();
-          soundBtn.textContent = "🔇";
-        }
+        audio.paused ? audio.play() : audio.pause();
       };
     </script>
   </body>
