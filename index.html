@@ -9,7 +9,6 @@
     <title>Scan & Meditate</title>
 
     <style>
-      /* ===== KLEUREN (CSS VARIABLES) ===== */
       :root {
         --gold: #fefefe;
         --gold-glow1: rgba(250, 251, 250, 0.9);
@@ -20,7 +19,6 @@
         --blue-glow2: rgba(97, 152, 140, 0.5);
       }
 
-      /* ===== BASIS INSTELLINGEN ===== */
       html,
       body {
         margin: 0;
@@ -32,7 +30,6 @@
         letter-spacing: 0.05em;
       }
 
-      /* ===== CAMERA VIDEO ===== */
       video {
         position: fixed;
         inset: 0;
@@ -42,7 +39,6 @@
         z-index: 0;
       }
 
-      /* ===== OVERLAY MET HALO ===== */
       .overlay {
         position: fixed;
         inset: 0;
@@ -55,7 +51,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0.7);
-        transition: transform 4s ease-in-out; /* soepele adem-animatie */
+        transition: transform 4s ease-in-out;
       }
 
       .halo {
@@ -81,7 +77,6 @@
         height: 76vmin;
       }
 
-      /* ===== ADEM TEKST ===== */
       .text {
         position: fixed;
         bottom: 11%;
@@ -93,7 +88,6 @@
         z-index: 3;
       }
 
-      /* ===== COUNTDOWN ===== */
       .countdown {
         position: fixed;
         inset: 0;
@@ -106,7 +100,6 @@
         opacity: 0;
       }
 
-      /* ===== STARTSCHERM ===== */
       .start {
         position: fixed;
         inset: 0;
@@ -144,7 +137,6 @@
         cursor: pointer;
       }
 
-      /* ===== TILT INDICATOR ===== */
       .tilt-indicator {
         position: fixed;
         top: 5%;
@@ -171,7 +163,6 @@
         text-align: center;
       }
 
-      /* ===== GELUID KNOP ===== */
       .sound-toggle {
         position: fixed;
         top: 18px;
@@ -188,41 +179,21 @@
         z-index: 20;
         color: white;
       }
-
-      /* ===== ERROR POPUP ===== */
-      #errorPopup {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.85);
-        color: white;
-        display: none;
-        z-index: 100;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 30px;
-        flex-direction: column;
-      }
     </style>
   </head>
 
   <body>
-    <!-- Camera beeld -->
     <video id="camera" autoplay muted playsinline></video>
-
-    <!-- Achtergrond muziek -->
     <audio id="audio" src="muziek.mp3" loop></audio>
-
-    <!-- Geluid aan/uit -->
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
-    <!-- Instructie voor kantelen -->
     <div class="tilt-indicator">
       <div class="indicator-bullet" id="indicatorBullet"></div>
-      <div class="indicator-text" id="indicatorText"></div>
+      <div class="indicator-text" id="indicatorText">
+        Tilt your phone up to switch the halo color
+      </div>
     </div>
 
-    <!-- Halo visual -->
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
         <div class="halo h3"></div>
@@ -231,11 +202,9 @@
       </div>
     </div>
 
-    <!-- Countdown en adem tekst -->
     <div class="countdown" id="countdown">3</div>
     <div class="text" id="text">INHALE</div>
 
-    <!-- Startscherm -->
     <div class="start" id="startScreen">
       <h1>START YOUR BREATHING EXERCISE</h1>
       <p>
@@ -245,38 +214,20 @@
       <button id="startBtn">START</button>
     </div>
 
-    <!-- Foutmelding -->
-    <div id="errorPopup">
-      <h2>Unfortunately</h2>
-      <p>The AR experience does not work on this device.</p>
-      <button onclick="location.reload()">Try again</button>
-    </div>
-
     <script>
-      /* ===== ELEMENTEN OPHALEN ===== */
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
       const audio = document.getElementById("audio");
       const soundBtn = document.getElementById("soundBtn");
-      const camera = document.getElementById("camera");
-      const indicatorText = document.getElementById("indicatorText");
-      const indicatorBullet = document.getElementById("indicatorBullet");
 
-      /* ===== STATUS VARIABELEN ===== */
-      let motionDetected = false;
-      let cameraAccess = false;
-      let audioWorks = true;
-      let interval = null;
-
-      /* ===== ADEMHALING LOGICA ===== */
+      /* BREATHING */
       const phases = [
         { l: "INHALE", s: 1.12 },
         { l: "HOLD", s: 1.12 },
         { l: "EXHALE", s: 0.7 },
         { l: "HOLD", s: 0.7 },
       ];
-
       let i = 0;
 
       function breathe() {
@@ -285,16 +236,15 @@
         i = (i + 1) % phases.length;
       }
 
-      /* ===== TELEFOON KANTELEN (KLEUR) ===== */
+      /* TILT */
       let base = null;
       let armed = true;
-      let color = "gold";
-      const TILT_THRESHOLD = 5;
+      let isGreen = false;
+      const TILT_THRESHOLD = 4;
 
       function toggleColor() {
-        color = color === "gold" ? "blue" : "gold";
-
-        if (color === "blue") {
+        isGreen = !isGreen;
+        if (isGreen) {
           document.documentElement.style.setProperty("--gold", "var(--blue)");
           document.documentElement.style.setProperty(
             "--gold-glow1",
@@ -317,50 +267,40 @@
         }
       }
 
-      function motion(e) {
-        motionDetected = true;
-        let beta = e.beta;
-        if (beta == null) return;
-
+      function onOrientation(e) {
+        if (e.beta == null) return;
         if (base === null) {
-          base = beta;
+          base = e.beta;
           return;
         }
-
-        const delta = beta - base;
-
+        const delta = e.beta - base;
         if (delta < -TILT_THRESHOLD && armed) {
           armed = false;
           toggleColor();
         }
-
-        if (delta > -5) armed = true;
+        if (delta > -2) armed = true;
       }
 
-      /* ===== PERMISSIES ===== */
-      async function requestPermissions() {
+      /* START */
+      document.getElementById("startBtn").onclick = async () => {
+        document.getElementById("startScreen").style.display = "none";
+
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" },
           });
-          camera.srcObject = stream;
-          cameraAccess = true;
-        } catch {
-          cameraAccess = false;
+          document.getElementById("camera").srcObject = stream;
+        } catch {}
+
+        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
+          const p = await DeviceOrientationEvent.requestPermission();
+          if (p === "granted") {
+            window.addEventListener("deviceorientation", onOrientation);
+          }
+        } else {
+          window.addEventListener("deviceorientation", onOrientation);
         }
 
-        window.addEventListener("deviceorientation", motion);
-
-        try {
-          await audio.play();
-          audio.pause();
-        } catch {
-          audioWorks = false;
-        }
-      }
-
-      /* ===== START ===== */
-      function startCountdown() {
         let c = 3;
         countdown.style.opacity = 1;
         countdown.textContent = c;
@@ -374,28 +314,14 @@
             soundBtn.style.opacity = 1;
             soundBtn.style.pointerEvents = "auto";
             text.style.opacity = 1;
-            interval = setInterval(breathe, 4000);
-          } else {
-            countdown.textContent = c;
-          }
+            breathe();
+            setInterval(breathe, 4000);
+          } else countdown.textContent = c;
         }, 1000);
-      }
-
-      document.getElementById("startBtn").onclick = async () => {
-        document.getElementById("startScreen").style.display = "none";
-        await requestPermissions();
-        startCountdown();
       };
 
-      /* ===== GELUID AAN / UIT ===== */
       soundBtn.onclick = () => {
-        if (audio.paused) {
-          audio.play();
-          soundBtn.textContent = "🔊";
-        } else {
-          audio.pause();
-          soundBtn.textContent = "🔇";
-        }
+        audio.paused ? audio.play() : audio.pause();
       };
     </script>
   </body>
