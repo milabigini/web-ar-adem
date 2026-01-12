@@ -7,25 +7,32 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>Scan & Meditate</title>
+
     <style>
+      /* ===== KLEUREN (CSS VARIABLES) ===== */
       :root {
         --gold: #fefefe;
         --gold-glow1: rgba(250, 251, 250, 0.9);
         --gold-glow2: rgba(250, 251, 250, 0.6);
+
         --blue: #61988c;
         --blue-glow1: rgba(97, 152, 140, 0.7);
         --blue-glow2: rgba(97, 152, 140, 0.5);
       }
+
+      /* ===== BASIS INSTELLINGEN ===== */
       html,
       body {
         margin: 0;
         height: 100%;
         background: black;
         overflow: hidden;
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-family: Helvetica, Arial, sans-serif;
         font-weight: 100;
         letter-spacing: 0.05em;
       }
+
+      /* ===== CAMERA VIDEO ===== */
       video {
         position: fixed;
         inset: 0;
@@ -34,19 +41,23 @@
         object-fit: cover;
         z-index: 0;
       }
+
+      /* ===== OVERLAY MET HALO ===== */
       .overlay {
         position: fixed;
         inset: 0;
         pointer-events: none;
         z-index: 2;
       }
+
       .halo-mover {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0.7);
-        transition: transform 4s ease-in-out;
+        transition: transform 4s ease-in-out; /* soepele adem-animatie */
       }
+
       .halo {
         position: absolute;
         top: 50%;
@@ -56,6 +67,7 @@
         border: 3px solid var(--gold);
         box-shadow: 0 0 40px var(--gold-glow1), 0 0 140px var(--gold-glow2);
       }
+
       .h1 {
         width: 52vmin;
         height: 52vmin;
@@ -68,6 +80,8 @@
         width: 76vmin;
         height: 76vmin;
       }
+
+      /* ===== ADEM TEKST ===== */
       .text {
         position: fixed;
         bottom: 11%;
@@ -78,6 +92,8 @@
         opacity: 0;
         z-index: 3;
       }
+
+      /* ===== COUNTDOWN ===== */
       .countdown {
         position: fixed;
         inset: 0;
@@ -89,6 +105,8 @@
         z-index: 5;
         opacity: 0;
       }
+
+      /* ===== STARTSCHERM ===== */
       .start {
         position: fixed;
         inset: 0;
@@ -101,19 +119,21 @@
         z-index: 10;
         color: white;
       }
+
       .start h1 {
         font-size: 28px;
         font-weight: 200;
-        letter-spacing: 0.06em;
         text-transform: uppercase;
         margin-bottom: 12px;
       }
+
       .start p {
         font-size: 16px;
         max-width: 320px;
         line-height: 1.5em;
         margin-bottom: 50px;
       }
+
       .start button {
         padding: 16px 40px;
         border-radius: 40px;
@@ -123,6 +143,8 @@
         font-size: 16px;
         cursor: pointer;
       }
+
+      /* ===== TILT INDICATOR ===== */
       .tilt-indicator {
         position: fixed;
         top: 5%;
@@ -134,20 +156,22 @@
         z-index: 4;
         pointer-events: none;
       }
+
       .indicator-bullet {
         width: 14px;
         height: 14px;
         border-radius: 50%;
         background: #61988c;
-        transition: background 0.4s ease;
       }
+
       .indicator-text {
         font-size: 16px;
         color: white;
         width: 260px;
         text-align: center;
-        line-height: 1.2em;
       }
+
+      /* ===== GELUID KNOP ===== */
       .sound-toggle {
         position: fixed;
         top: 18px;
@@ -164,6 +188,8 @@
         z-index: 20;
         color: white;
       }
+
+      /* ===== ERROR POPUP ===== */
       #errorPopup {
         position: fixed;
         inset: 0;
@@ -177,28 +203,26 @@
         padding: 30px;
         flex-direction: column;
       }
-      #errorPopup button {
-        margin-top: 20px;
-        padding: 14px 30px;
-        border: none;
-        border-radius: 30px;
-        font-size: 16px;
-        cursor: pointer;
-      }
     </style>
   </head>
+
   <body>
+    <!-- Camera beeld -->
     <video id="camera" autoplay muted playsinline></video>
+
+    <!-- Achtergrond muziek -->
     <audio id="audio" src="muziek.mp3" loop></audio>
+
+    <!-- Geluid aan/uit -->
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
+    <!-- Instructie voor kantelen -->
     <div class="tilt-indicator">
       <div class="indicator-bullet" id="indicatorBullet"></div>
-      <div class="indicator-text" id="indicatorText">
-        Tilt your phone to play with the halo colors!
-      </div>
+      <div class="indicator-text" id="indicatorText"></div>
     </div>
 
+    <!-- Halo visual -->
     <div class="overlay">
       <div class="halo-mover" id="haloMover">
         <div class="halo h3"></div>
@@ -207,19 +231,21 @@
       </div>
     </div>
 
+    <!-- Countdown en adem tekst -->
     <div class="countdown" id="countdown">3</div>
     <div class="text" id="text">INHALE</div>
 
+    <!-- Startscherm -->
     <div class="start" id="startScreen">
       <h1>START YOUR BREATHING EXERCISE</h1>
       <p>
-        This exercise helps you focus and relax. We’ll use your camera to track
-        your device orientation so you can interact with the halo as you
-        breathe.
+        This exercise helps you focus and relax. We use your camera and motion
+        sensors to create an interactive breathing experience.
       </p>
       <button id="startBtn">START</button>
     </div>
 
+    <!-- Foutmelding -->
     <div id="errorPopup">
       <h2>Unfortunately</h2>
       <p>The AR experience does not work on this device.</p>
@@ -227,6 +253,7 @@
     </div>
 
     <script>
+      /* ===== ELEMENTEN OPHALEN ===== */
       const haloMover = document.getElementById("haloMover");
       const text = document.getElementById("text");
       const countdown = document.getElementById("countdown");
@@ -236,55 +263,38 @@
       const indicatorText = document.getElementById("indicatorText");
       const indicatorBullet = document.getElementById("indicatorBullet");
 
+      /* ===== STATUS VARIABELEN ===== */
       let motionDetected = false;
       let cameraAccess = false;
       let audioWorks = true;
       let interval = null;
 
-      /* BREATHING */
+      /* ===== ADEMHALING LOGICA ===== */
       const phases = [
         { l: "INHALE", s: 1.12 },
         { l: "HOLD", s: 1.12 },
         { l: "EXHALE", s: 0.7 },
         { l: "HOLD", s: 0.7 },
       ];
+
       let i = 0;
+
       function breathe() {
         text.textContent = phases[i].l;
-        haloMover.style.transform = `translate(-50%,-50%) scale(${phases[i].s})`;
+        haloMover.style.transform = `translate(-50%, -50%) scale(${phases[i].s})`;
         i = (i + 1) % phases.length;
       }
 
-      /* COLOR TILT */
-      let base = null,
-        armed = true,
-        color = "gold";
+      /* ===== TELEFOON KANTELEN (KLEUR) ===== */
+      let base = null;
+      let armed = true;
+      let color = "gold";
       const TILT_THRESHOLD = 5;
-      function updateIndicator() {
-        if (color === "gold") {
-          indicatorBullet.style.background = "#61988c";
-          indicatorText.textContent = "Tilt up to switch to green";
-        } else if (color === "blue") {
-          indicatorBullet.style.background = "#61988c";
-          indicatorText.textContent = "Tilt up to switch to white";
-        } else {
-          indicatorBullet.style.background = "#fefefe";
-          indicatorText.textContent = "Tilt up to switch to green";
-        }
-      }
+
       function toggleColor() {
-        color = color === "gold" ? "blue" : color === "blue" ? "white" : "gold";
-        if (color === "gold") {
-          document.documentElement.style.setProperty("--gold", "#fefefe");
-          document.documentElement.style.setProperty(
-            "--gold-glow1",
-            "rgba(250,251,250,.9)"
-          );
-          document.documentElement.style.setProperty(
-            "--gold-glow2",
-            "rgba(250,251,250,.6)"
-          );
-        } else if (color === "blue") {
+        color = color === "gold" ? "blue" : "gold";
+
+        if (color === "blue") {
           document.documentElement.style.setProperty("--gold", "var(--blue)");
           document.documentElement.style.setProperty(
             "--gold-glow1",
@@ -296,77 +306,64 @@
           );
         } else {
           document.documentElement.style.setProperty("--gold", "#fefefe");
-          document.documentElement.style.setProperty("--gold-glow1", "#fefefe");
-          document.documentElement.style.setProperty("--gold-glow2", "#fefefe");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "rgba(250,251,250,.9)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "rgba(250,251,250,.6)"
+          );
         }
-        updateIndicator();
       }
+
       function motion(e) {
         motionDetected = true;
-        let beta = e.beta || e.rotationRate?.beta;
+        let beta = e.beta;
         if (beta == null) return;
-        if (base == null) {
+
+        if (base === null) {
           base = beta;
           return;
         }
+
         const delta = beta - base;
+
         if (delta < -TILT_THRESHOLD && armed) {
           armed = false;
           toggleColor();
         }
+
         if (delta > -5) armed = true;
       }
 
-      /* PERMISSIONS */
+      /* ===== PERMISSIES ===== */
       async function requestPermissions() {
-        // Camera
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" },
           });
           camera.srcObject = stream;
           cameraAccess = true;
-        } catch (err) {
-          console.log("Camera error:", err);
+        } catch {
           cameraAccess = false;
         }
 
-        // Motion
-        if (typeof DeviceMotionEvent?.requestPermission === "function") {
-          try {
-            const p = await DeviceMotionEvent.requestPermission();
-            if (p === "granted")
-              window.addEventListener("deviceorientation", motion);
-          } catch (err) {
-            console.log("Motion permission denied:", err);
-          }
-        } else {
-          window.addEventListener("deviceorientation", motion);
-        }
+        window.addEventListener("deviceorientation", motion);
 
-        // Audio
         try {
           await audio.play();
           audio.pause();
-          audioWorks = true;
-        } catch (err) {
-          console.log("Audio error:", err);
+        } catch {
           audioWorks = false;
         }
       }
 
-      /* ERROR POPUP */
-      function showErrorPopup() {
-        clearInterval(interval);
-        text.style.opacity = 0;
-        document.getElementById("errorPopup").style.display = "flex";
-      }
-
-      /* START */
+      /* ===== START ===== */
       function startCountdown() {
         let c = 3;
-        countdown.textContent = c;
         countdown.style.opacity = 1;
+        countdown.textContent = c;
 
         const t = setInterval(() => {
           c--;
@@ -377,33 +374,20 @@
             soundBtn.style.opacity = 1;
             soundBtn.style.pointerEvents = "auto";
             text.style.opacity = 1;
-            i = 0;
             interval = setInterval(breathe, 4000);
-
-            // CHECK na 5 seconden: motion, camera, audio, halo breathing
-            setTimeout(() => {
-              const transform = haloMover.style.transform || "";
-              if (
-                !motionDetected ||
-                !cameraAccess ||
-                !audioWorks ||
-                !transform.includes("scale")
-              ) {
-                showErrorPopup();
-              }
-            }, 5000); // 5 seconden i.p.v 3
-          } else countdown.textContent = c;
+          } else {
+            countdown.textContent = c;
+          }
         }, 1000);
       }
 
       document.getElementById("startBtn").onclick = async () => {
         document.getElementById("startScreen").style.display = "none";
-        updateIndicator();
         await requestPermissions();
         startCountdown();
       };
 
-      /* SOUND */
+      /* ===== GELUID AAN / UIT ===== */
       soundBtn.onclick = () => {
         if (audio.paused) {
           audio.play();
