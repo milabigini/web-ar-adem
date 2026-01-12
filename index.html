@@ -7,21 +7,15 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>Scan & Meditate</title>
-
     <style>
-      /* =========================
-         KLEUREN IN AR
-      ========================= */
       :root {
         --gold: #fefefe;
         --gold-glow1: rgba(250, 251, 250, 0.9);
         --gold-glow2: rgba(250, 251, 250, 0.6);
-
         --blue: #61988c;
         --blue-glow1: rgba(97, 152, 140, 0.7);
         --blue-glow2: rgba(97, 152, 140, 0.5);
       }
-
       html,
       body {
         margin: 0;
@@ -32,10 +26,6 @@
         font-weight: 100;
         letter-spacing: 0.05em;
       }
-
-      /* =========================
-         CAMERA POSITIE
-      ========================= */
       video {
         position: fixed;
         inset: 0;
@@ -44,17 +34,12 @@
         object-fit: cover;
         z-index: 0;
       }
-
-      /* =========================
-         HALO OVERLAY
-      ========================= */
       .overlay {
         position: fixed;
         inset: 0;
         pointer-events: none;
         z-index: 2;
       }
-
       .halo-mover {
         position: absolute;
         top: 50%;
@@ -62,7 +47,6 @@
         transform: translate(-50%, -50%) scale(0.7);
         transition: transform 4s ease-in-out;
       }
-
       .halo {
         position: absolute;
         top: 50%;
@@ -72,7 +56,6 @@
         border: 3px solid var(--gold);
         box-shadow: 0 0 40px var(--gold-glow1), 0 0 140px var(--gold-glow2);
       }
-
       .h1 {
         width: 52vmin;
         height: 52vmin;
@@ -85,10 +68,6 @@
         width: 76vmin;
         height: 76vmin;
       }
-
-      /* =========================
-         TEKST & COUNTDOWN
-      ========================= */
       .text {
         position: fixed;
         bottom: 11%;
@@ -99,7 +78,6 @@
         opacity: 0;
         z-index: 3;
       }
-
       .countdown {
         position: fixed;
         inset: 0;
@@ -111,10 +89,6 @@
         z-index: 5;
         opacity: 0;
       }
-
-      /* =========================
-         START SCHERM
-      ========================= */
       .start {
         position: fixed;
         inset: 0;
@@ -127,21 +101,19 @@
         z-index: 10;
         color: white;
       }
-
       .start h1 {
         font-size: 28px;
         font-weight: 200;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
         margin-bottom: 12px;
       }
-
       .start p {
         font-size: 16px;
         max-width: 320px;
         line-height: 1.5em;
         margin-bottom: 50px;
       }
-
       .start button {
         padding: 16px 40px;
         border-radius: 40px;
@@ -151,10 +123,6 @@
         font-size: 16px;
         cursor: pointer;
       }
-
-      /* =========================
-         TILT ONDERDEEL
-      ========================= */
       .tilt-indicator {
         position: fixed;
         top: 5%;
@@ -166,24 +134,20 @@
         z-index: 4;
         pointer-events: none;
       }
-
       .indicator-bullet {
         width: 14px;
         height: 14px;
         border-radius: 50%;
         background: #61988c;
+        transition: background 0.4s ease;
       }
-
       .indicator-text {
         font-size: 16px;
         color: white;
         width: 260px;
         text-align: center;
+        line-height: 1.2em;
       }
-
-      /* =========================
-         GELUID KNOP
-      ========================= */
       .sound-toggle {
         position: fixed;
         top: 18px;
@@ -200,15 +164,10 @@
         z-index: 20;
         color: white;
       }
-
-      /* =========================
-         POPUPS
-      ========================= */
-      #errorPopup,
-      #colorWarning {
+      #errorPopup {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.85);
         color: white;
         display: none;
         z-index: 100;
@@ -218,17 +177,26 @@
         padding: 30px;
         flex-direction: column;
       }
+      #errorPopup button {
+        margin-top: 20px;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 30px;
+        font-size: 16px;
+        cursor: pointer;
+      }
     </style>
   </head>
-
   <body>
     <video id="camera" autoplay muted playsinline></video>
     <audio id="audio" src="muziek.mp3" loop></audio>
     <div class="sound-toggle" id="soundBtn">🔊</div>
 
     <div class="tilt-indicator">
-      <div class="indicator-bullet"></div>
-      <div class="indicator-text">Tilt your phone up to change halo colors</div>
+      <div class="indicator-bullet" id="indicatorBullet"></div>
+      <div class="indicator-text" id="indicatorText">
+        Tilt your phone to play with the halo colors!
+      </div>
     </div>
 
     <div class="overlay">
@@ -243,7 +211,7 @@
     <div class="text" id="text">INHALE</div>
 
     <div class="start" id="startScreen">
-      <h1>Start Your Breathing Exercise</h1>
+      <h1>START YOUR BREATHING EXERCISE</h1>
       <p>
         This exercise helps you focus and relax. We’ll use your camera to track
         your device orientation so you can interact with the halo as you
@@ -254,19 +222,8 @@
 
     <div id="errorPopup">
       <h2>Unfortunately</h2>
-      <p>This AR experience does not work on your device.</p>
-      <button onclick="location.reload()">HOME</button>
-    </div>
-
-    <div id="colorWarning">
-      <h2>Notice</h2>
-      <p>
-        Color interaction is not supported on this device.<br />
-        You can continue the breathing exercise without color changes.
-      </p>
-      <button onclick="this.parentElement.style.display='none'">
-        Continue
-      </button>
+      <p>The AR experience does not work on this device.</p>
+      <button onclick="location.reload()">Try again</button>
     </div>
 
     <script>
@@ -276,14 +233,15 @@
       const audio = document.getElementById("audio");
       const soundBtn = document.getElementById("soundBtn");
       const camera = document.getElementById("camera");
+      const indicatorText = document.getElementById("indicatorText");
+      const indicatorBullet = document.getElementById("indicatorBullet");
 
+      let motionDetected = false;
       let cameraAccess = false;
       let audioWorks = true;
-      let colorTiltWorks = false;
+      let interval = null;
 
-      /* =========================
-         ADEMHALING
-      ========================= */
+      /* BREATHING */
       const phases = [
         { l: "INHALE", s: 1.12 },
         { l: "HOLD", s: 1.12 },
@@ -291,138 +249,169 @@
         { l: "HOLD", s: 0.7 },
       ];
       let i = 0;
-
       function breathe() {
         text.textContent = phases[i].l;
         haloMover.style.transform = `translate(-50%,-50%) scale(${phases[i].s})`;
         i = (i + 1) % phases.length;
       }
 
-      /* =========================
-         TILT → KLEUR (FIXED)
-      ========================= */
-      let base = null;
-      let armed = true;
-      let isGreen = false;
-
+      /* COLOR TILT */
+      let base = null,
+        armed = true,
+        color = "gold";
+      const TILT_THRESHOLD = 5;
+      function updateIndicator() {
+        if (color === "gold") {
+          indicatorBullet.style.background = "#61988c";
+          indicatorText.textContent = "Tilt up to switch to green";
+        } else if (color === "blue") {
+          indicatorBullet.style.background = "#61988c";
+          indicatorText.textContent = "Tilt up to switch to white";
+        } else {
+          indicatorBullet.style.background = "#fefefe";
+          indicatorText.textContent = "Tilt up to switch to green";
+        }
+      }
+      function toggleColor() {
+        color = color === "gold" ? "blue" : color === "blue" ? "white" : "gold";
+        if (color === "gold") {
+          document.documentElement.style.setProperty("--gold", "#fefefe");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "rgba(250,251,250,.9)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "rgba(250,251,250,.6)"
+          );
+        } else if (color === "blue") {
+          document.documentElement.style.setProperty("--gold", "var(--blue)");
+          document.documentElement.style.setProperty(
+            "--gold-glow1",
+            "var(--blue-glow1)"
+          );
+          document.documentElement.style.setProperty(
+            "--gold-glow2",
+            "var(--blue-glow2)"
+          );
+        } else {
+          document.documentElement.style.setProperty("--gold", "#fefefe");
+          document.documentElement.style.setProperty("--gold-glow1", "#fefefe");
+          document.documentElement.style.setProperty("--gold-glow2", "#fefefe");
+        }
+        updateIndicator();
+      }
       function motion(e) {
-        let beta = e.beta;
+        motionDetected = true;
+        let beta = e.beta || e.rotationRate?.beta;
         if (beta == null) return;
-
-        colorTiltWorks = true;
-
-        if (base === null) {
+        if (base == null) {
           base = beta;
           return;
         }
-
         const delta = beta - base;
-
-        // ⬆️ kleine tilt omhoog
-        if (delta < -4 && armed) {
+        if (delta < -TILT_THRESHOLD && armed) {
           armed = false;
-          isGreen = !isGreen;
-
-          if (isGreen) {
-            document.documentElement.style.setProperty("--gold", "var(--blue)");
-            document.documentElement.style.setProperty(
-              "--gold-glow1",
-              "var(--blue-glow1)"
-            );
-            document.documentElement.style.setProperty(
-              "--gold-glow2",
-              "var(--blue-glow2)"
-            );
-          } else {
-            document.documentElement.style.setProperty("--gold", "#fefefe");
-            document.documentElement.style.setProperty(
-              "--gold-glow1",
-              "rgba(250,251,250,.9)"
-            );
-            document.documentElement.style.setProperty(
-              "--gold-glow2",
-              "rgba(250,251,250,.6)"
-            );
-          }
+          toggleColor();
         }
-
-        // 🔁 reset wanneer terug naar neutraal
-        if (delta > -1) {
-          armed = true;
-        }
+        if (delta > -5) armed = true;
       }
 
-      /* =========================
-         PERMISSIES
-      ========================= */
+      /* PERMISSIONS */
       async function requestPermissions() {
+        // Camera
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
+            video: { facingMode: "environment" },
           });
           camera.srcObject = stream;
           cameraAccess = true;
-        } catch {}
+        } catch (err) {
+          console.log("Camera error:", err);
+          cameraAccess = false;
+        }
 
-        if (typeof DeviceOrientationEvent?.requestPermission === "function") {
-          const p = await DeviceOrientationEvent.requestPermission();
-          if (p === "granted")
-            window.addEventListener("deviceorientation", motion);
+        // Motion
+        if (typeof DeviceMotionEvent?.requestPermission === "function") {
+          try {
+            const p = await DeviceMotionEvent.requestPermission();
+            if (p === "granted")
+              window.addEventListener("deviceorientation", motion);
+          } catch (err) {
+            console.log("Motion permission denied:", err);
+          }
         } else {
           window.addEventListener("deviceorientation", motion);
         }
 
+        // Audio
         try {
           await audio.play();
           audio.pause();
-        } catch {
+          audioWorks = true;
+        } catch (err) {
+          console.log("Audio error:", err);
           audioWorks = false;
         }
       }
 
-      /* =========================
-         START
-      ========================= */
+      /* ERROR POPUP */
+      function showErrorPopup() {
+        clearInterval(interval);
+        text.style.opacity = 0;
+        document.getElementById("errorPopup").style.display = "flex";
+      }
+
+      /* START */
       function startCountdown() {
         let c = 3;
-        countdown.style.opacity = 1;
         countdown.textContent = c;
+        countdown.style.opacity = 1;
 
         const t = setInterval(() => {
           c--;
           if (c === 0) {
             clearInterval(t);
             countdown.style.opacity = 0;
-
             audio.play().catch(() => {});
             soundBtn.style.opacity = 1;
             soundBtn.style.pointerEvents = "auto";
             text.style.opacity = 1;
+            i = 0;
+            interval = setInterval(breathe, 4000);
 
-            breathe();
-            setInterval(breathe, 4000);
-
+            // CHECK na 5 seconden: motion, camera, audio, halo breathing
             setTimeout(() => {
-              if (!cameraAccess || !audioWorks) {
-                document.getElementById("errorPopup").style.display = "flex";
-              } else if (!colorTiltWorks) {
-                document.getElementById("colorWarning").style.display = "flex";
+              const transform = haloMover.style.transform || "";
+              if (
+                !motionDetected ||
+                !cameraAccess ||
+                !audioWorks ||
+                !transform.includes("scale")
+              ) {
+                showErrorPopup();
               }
-            }, 5000);
-          } else {
-            countdown.textContent = c;
-          }
+            }, 5000); // 5 seconden i.p.v 3
+          } else countdown.textContent = c;
         }, 1000);
       }
 
       document.getElementById("startBtn").onclick = async () => {
         document.getElementById("startScreen").style.display = "none";
+        updateIndicator();
         await requestPermissions();
         startCountdown();
       };
 
+      /* SOUND */
       soundBtn.onclick = () => {
-        audio.paused ? audio.play() : audio.pause();
+        if (audio.paused) {
+          audio.play();
+          soundBtn.textContent = "🔊";
+        } else {
+          audio.pause();
+          soundBtn.textContent = "🔇";
+        }
       };
     </script>
   </body>
